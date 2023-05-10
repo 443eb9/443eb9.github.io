@@ -1,0 +1,155 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: rgba(0, 0, 0, 0.6) url(home_page_img/background.jpg) no-repeat fixed center;
+    background-size: cover;
+    background-blend-mode: darken;
+}
+
+html::-webkit-scrollbar {
+    width: 20px;
+}
+
+html::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+html::-webkit-scrollbar-thumb {
+    background: rgb(50, 50, 50);
+}
+
+a {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+}
+
+.clearfix::before,
+.clearfix::after {
+    content: "";
+    display: table;
+}
+
+.clearfix::after {
+    clear: both;
+}
+
+.body-container {
+    overflow: auto;
+    width: 80%;
+    margin: auto;
+}
+
+.content-box {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 7px;
+}
+
+.banner {
+    height: 300px;
+    margin: 80px auto 0;
+}
+
+.banner .avatar {
+    float: left;
+    width: 100px;
+    height: 100px;
+    margin: 150px 0 0 120px;
+    background-color: white;
+    border: 5px solid white;
+    border-radius: 50%;
+}
+
+.banner .title {
+    float: left;
+    margin: 180px 30px;
+    color: white;
+    font: normal 800 50px/55px "bender";
+}
+
+.left-section {
+    float: left;
+    overflow: hidden;
+    width: 250px;
+    color: white;
+    margin: -80px 0;
+    padding: 0 20px;
+}
+
+.left-section * {
+    margin: 5px 0;
+}
+
+.left-section *:first-child {
+    margin-top: 15px;
+}
+
+.left-section .title {
+    font: normal 400 30px/30px "SourceHanSansSC";
+}
+
+.left-section .content {
+    font: normal 400 30px/50px "bender";
+}
+
+.article-container {
+    float: right;
+    width: calc(100% - 300px);
+    margin: -100px 0 80px;
+    color: white;
+}
+
+.article-container .article {
+    width: 100%;
+    margin: 20px 0;
+}
+
+.article-container .article-info {
+    height: 60px;
+    margin: 10px 20px;
+    padding: 10px 20px;
+    border-bottom: 1px dashed white;
+}
+
+.article-container .title {
+    float: left;
+    font: normal 800 30px/30px "SourceHanSansSC";
+}
+
+.article-container .detailed-info * {
+    float: right;
+    color: rgb(150, 150, 150);
+    margin: 15px 20px;
+    font: normal 800 15px/30px "SourceHanSansSC";
+}
+
+.article-container .preview {
+    overflow: hidden;
+    height: 153px;
+    float: left;
+    width: calc(100% - 400px);
+    margin: 0 30px 10px;
+    padding: 0 20px 20px;
+    font: normal 400 20px/25px "SourceHanSansSC";
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+}
+
+.article-container .preview-img {
+    float: right;
+    width: 250px;
+    height: 140px;
+    border: 3px solid white;
+    margin: 10px 50px 0 0;
+    background: transparent url(home_page_img/preview-imgs/1.jpg) no-repeat scroll center;
+    background-size: cover;
+}
