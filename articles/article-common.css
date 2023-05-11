@@ -1,0 +1,54 @@
+body {
+    background-image: url(../imgsrc/background/article.jpg);
+}
+
+pre {
+    overflow: auto;
+}
+
+code {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    font: normal 400 20px/25px "Consolas";
+}
+
+.title {
+    height: 100px;
+    margin: 60px 0;
+}
+
+.title * {
+    float: left;
+    line-height: 100px;
+}
+
+.back-button i {
+    font-size: 30px;
+    margin-left: 20px;
+    transform: rotate(-90deg);
+}
+
+.back-button h2 {
+    font-family: "Bender";
+}
+
+.article-title {
+    margin-left: 40px;
+    font: normal 800 50px/100px "SourceHansSans";
+}
+
+.article-post-time {
+    float: right;
+    margin-right: 40px;
+    color: rgb(150, 150, 150);
+    font-family: "Bender";
+}
+
+.article-body {
+    margin-bottom: 60px;
+    padding: 5px 40px;
+    font: normal 400 20px/30px "SourceHansSans";
+}
+
+.article-body p {
+    margin: 30px 0;
+}
