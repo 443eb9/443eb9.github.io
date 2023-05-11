@@ -19,7 +19,7 @@ body {
 
 .banner .title {
     float: left;
-    margin: 180px 30px;
+    margin: 180px 30px 100px;
     color: white;
     font: normal 800 50px/55px "bender";
 }
@@ -27,9 +27,9 @@ body {
 .left-section {
     float: left;
     overflow: hidden;
+    margin-top: 10px;
     width: 250px;
     color: white;
-    margin: -80px 0;
     padding: 0 20px;
 }
 
@@ -52,9 +52,13 @@ body {
 .article-container {
     float: right;
     width: calc(100% - 300px);
-    margin: -100px 0 80px;
+    margin: 0 0 80px;
     padding: 10px;
     color: white;
+}
+
+.article-container a:first-of-type {
+    margin-top: 0;
 }
 
 .article-container .article {
