@@ -52,3 +52,8 @@ code {
 .article-body p {
     margin: 30px 0;
 }
+
+.article-body .subtitle {
+    font: normal 800 50px/30px "STZhongSong";
+    margin: 30px 0;
+}
