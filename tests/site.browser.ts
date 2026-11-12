@@ -63,7 +63,21 @@ test('desktop scale, stripe response, island cards and mobile pagination remain 
   const stripes = page.locator('.stripe-square path')
   const before = await stripes.evaluateAll(elements => elements.map(element => element.getAttribute('d')).join(''))
   await page.locator('.stripe-square').hover()
-  expect(await stripes.evaluateAll(elements => elements.map(element => element.getAttribute('d')).join(''))).not.toBe(before)
+  const shifts = () => stripes.evaluateAll(elements => elements.map(element => {
+    const matrix = new DOMMatrix(getComputedStyle(element).transform)
+    return { x: matrix.e, y: matrix.f, a: matrix.a, b: matrix.b, c: matrix.c, d: matrix.d }
+  }))
+  await expect.poll(async () => (await shifts()).some(shift => shift.x < -1)).toBe(true)
+  const moved = await shifts()
+  expect(moved.some(shift => shift.x > 1)).toBe(true)
+  for (const shift of moved) {
+    expect(shift.x).toBeCloseTo(shift.y, 4)
+    expect([shift.a, shift.b, shift.c, shift.d]).toEqual([1, 0, 0, 1])
+  }
+  expect(await stripes.evaluateAll(elements => elements.map(element => element.getAttribute('d')).join(''))).toBe(before)
+  expect(await stripes.evaluateAll(elements => elements.every(element => (element.getAttribute('d')!.match(/L/g) ?? []).length === 1))).toBe(true)
+  await page.mouse.move(0, 0)
+  await expect.poll(async () => (await shifts()).every(shift => Math.abs(shift.x) < 0.1)).toBe(true)
   await page.getByRole('link', { name: '日志', exact: true }).click()
   await expect(page.locator('.island')).toHaveCount(7)
   await page.locator('.island-hit').nth(1).click()
@@ -111,7 +125,10 @@ test('gray blocks blink and move while image layers and fixed graphics retain th
   await expect.poll(() => block.evaluate(element => (element as HTMLElement).style.left)).not.toBe(initialLeft)
   const graphics = await page.evaluate(() => {
     const style = (selector: string) => getComputedStyle(document.querySelector(selector)!)
-    return { avatarShadow: style('.avatar').boxShadow, panelShadow: style('.valley').boxShadow,
+    const corner = document.querySelector('.stripe-corner-gray')!.getBoundingClientRect()
+    const right = document.querySelector('.stripe-edge-right')!.getBoundingClientRect()
+    const bottom = document.querySelector('.stripe-edge-bottom')!.getBoundingClientRect()
+    return { cornerCenterDelta: [corner.x + corner.width / 2 - right.x - right.width / 2, corner.y + corner.height / 2 - bottom.y - bottom.height / 2], avatarShadow: style('.avatar').boxShadow, panelShadow: style('.valley').boxShadow,
       railShadow: style('.vertical-rail').boxShadow, tileBorder: style('.tile-stack span').borderLeftWidth,
       blueCorner: style('.stripe-corner-blue').backgroundColor, grayCorner: style('.stripe-corner-gray').backgroundColor,
       cornerWidth: style('.stripe-corner-blue').width,
@@ -129,6 +146,7 @@ test('gray blocks blink and move while image layers and fixed graphics retain th
   expect(graphics.blueCorner).toBe('rgb(70, 100, 244)')
   expect(graphics.grayCorner).toBe('rgb(211, 211, 211)')
   expect(graphics.cornerWidth).toBe('52px')
+  for (const delta of graphics.cornerCenterDelta) expect(Math.abs(delta)).toBeLessThan(0.1)
   expect(graphics.junction).toMatch(/^url\(/)
   expect(graphics.base).toContain('canine.png')
   expect(graphics.outline).toContain('canine-outline.png')

@@ -42,8 +42,8 @@ export function Home() {
           <svg className="identity-rules" viewBox="0 0 181 44" aria-hidden="true"><g fill="currentColor"><path d="M0 5h13v13H0ZM26 5h13v13H26ZM13 18h13v13H13ZM0 31h13v13H0ZM26 31h13v13H26Z" /><path d="M0 0h181v2.5H0ZM42 6h139v2.5H42ZM42 12.5h139v3H42ZM42 18.5h139V21H42ZM42 25h139v3H42Z" /></g></svg>
         </div>
       </header>
-      <div className="valley terrain-panel"><span className="panel-label">Crepuscular Archipelago</span><Contours variant={2} /><Corners seed={2} /><span className="panel-coordinate">VALLEY #015</span></div>
-      <div className="height-map terrain-panel"><span className="panel-label">// HEIGHT MAP</span><Contours variant={5} /><Corners seed={5} /></div>
+      <div className="valley terrain-panel"><span className="panel-label">Crepuscular Archipelago</span><Contours variant={2} frameRate={60} /><Corners seed={2} /><span className="panel-coordinate">VALLEY #015</span></div>
+      <div className="height-map terrain-panel"><span className="panel-label">// HEIGHT MAP</span><Contours variant={5} frameRate={60} /><Corners seed={5} /></div>
       <div className="tile-stack" aria-hidden="true">{[0, 1, 2, 3, 4, 5].map(i => <span key={i} />)}</div>
       <StripeSquare />
     </motion.div>

@@ -5,25 +5,26 @@ import { createNoise3D } from 'simplex-noise'
 import { randomSource } from './terrain'
 import { createHalftone } from './halftone'
 
-export function Contours({ variant = 0 }: { variant?: number }) {
+export function Contours({ variant = 0, frameRate = 10 }: { variant?: number; frameRate?: number }) {
   const paths = useRef<SVGGElement>(null)
   const reduced = useReducedMotion()
 
   useEffect(() => {
     const noise = createNoise3D(randomSource(107 + variant))
     const generator = contours().size([64, 40]).thresholds([-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6])
+    const frameInterval = 1000 / frameRate
     let frame = 0
-    let last = -Infinity
+    let last = -frameInterval
     let aspect = 1.6
     const observer = new ResizeObserver(([entry]) => {
       aspect = entry.contentRect.width / entry.contentRect.height
-      last = -Infinity
+      last = -frameInterval
       if (reduced) draw(0)
     })
     observer.observe(paths.current!.ownerSVGElement!)
     function draw(now: number) {
-      if (now - last >= 100) {
-        last = now
+      if (now - last >= frameInterval) {
+        last = now - (now - last) % frameInterval
         const time = reduced ? 0 : now * 0.00002
         const values = Array.from({ length: 64 * 40 }, (_, i) => noise((i % 64) / 64 * aspect * 0.95 + variant, Math.floor(i / 64) / 40 * 0.95, time))
         const children = paths.current?.children
@@ -45,7 +46,7 @@ export function Contours({ variant = 0 }: { variant?: number }) {
     }
     frame = requestAnimationFrame(draw)
     return () => { observer.disconnect(); cancelAnimationFrame(frame) }
-  }, [variant, reduced])
+  }, [variant, frameRate, reduced])
 
   return <svg className="contour-field" viewBox="0 0 64 40" preserveAspectRatio="none" aria-hidden="true">
     <g ref={paths} fill="none" stroke="currentColor" strokeWidth="0.32">{Array.from({ length: 7 }, (_, i) => <path key={i} />)}</g>

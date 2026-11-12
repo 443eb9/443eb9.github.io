@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useReducedMotion } from 'motion/react'
-import { GRAY_BLOCK_TIMING, grayBlockFrames } from './decoration'
+import { motion, useReducedMotion } from 'motion/react'
+import { GRAY_BLOCK_TIMING, grayBlockFrames, stripeShift } from './decoration'
 
 function GrayBlock({ index }: { index: number }) {
   const ref = useRef<HTMLElement>(null)
@@ -35,22 +35,16 @@ export function GrayBlocks() {
 export function StripeSquare() {
   const [pointer, setPointer] = useState({ x: -1000, y: -1000 })
   const paths = Array.from({ length: 15 }, (_, i) => {
-    const points = Array.from({ length: 21 }, (_, j) => {
-      const x = j * 8 - 16
-      const y = i * 24 - 96 - x
-      const dx = x - pointer.x
-      const dy = y - pointer.y
-      const falloff = Math.max(0, 1 - Math.hypot(dx, dy) / 65) ** 2
-      return [x + dx * falloff * 0.7, y + dy * falloff * 0.7]
-    })
-    return `M${points.map(point => point.join(',')).join('L')}`
+    const intercept = i * 24 - 96
+    const shift = stripeShift(intercept, pointer)
+    return <motion.path key={i} d={`M-128,${intercept + 128}L256,${intercept - 256}`} animate={{ x: shift, y: shift }} transition={{ type: 'spring', stiffness: 260, damping: 28, mass: 0.6 }} />
   })
   return <div className="stripe-square" onPointerMove={event => {
     const box = event.currentTarget.getBoundingClientRect()
     setPointer({ x: (event.clientX - box.left) / box.width * 128, y: (event.clientY - box.top) / box.height * 128 })
   }} onPointerLeave={() => setPointer({ x: -1000, y: -1000 })} aria-hidden="true">
     {['top', 'right', 'bottom', 'left'].map(edge => <span key={edge} className={`stripe-edge stripe-edge-${edge}`} />)}
-    <svg viewBox="0 0 128 128"><g fill="none" stroke="currentColor" strokeWidth="3">{paths.map((path, i) => <path key={i} d={path} />)}</g></svg>
+    <svg viewBox="0 0 128 128"><g fill="none" stroke="currentColor" strokeWidth="3">{paths}</g></svg>
     <span className="stripe-corner stripe-corner-blue" />
     <span className="stripe-corner stripe-corner-gray" />
   </div>

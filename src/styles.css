@@ -103,7 +103,7 @@ button:disabled { cursor: default; }
 .stripe-square svg { display: block; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
 .stripe-corner { position: absolute; width: calc(26 * var(--u)); height: calc(26 * var(--u)); pointer-events: none; }
 .stripe-corner-blue { left: calc(-18 * var(--u)); top: calc(-18 * var(--u)); background: var(--blue); }
-.stripe-corner-gray { right: calc(-12 * var(--u)); bottom: calc(-18 * var(--u)); background: var(--gray); }
+.stripe-corner-gray { right: calc(-1 * (var(--stripe-stroke) + var(--stripe-step) / 2)); bottom: calc(-1 * (var(--stripe-stroke) + var(--stripe-step) / 2)); transform: translate(50%, 50%); background: var(--gray); }
 .home-nav { position: absolute; right: 2.5%; top: 30%; bottom: 3%; width: 14.2%; display: grid; grid-template-rows: repeat(4, 1fr); gap: calc(40 * var(--u)); }
 .frame-button { position: relative; display: grid; place-items: center; isolation: isolate; background: var(--paper); border: calc(2 * var(--u)) solid #aaa; box-shadow: 0 calc(4 * var(--u)) 0 #aaa; font-size: calc(34.396 * var(--u)); padding: calc(8 * var(--u)) calc(12 * var(--u)); }
 .frame-button::before { content: ''; position: absolute; inset: 0; background: var(--blue); z-index: -1; transform-origin: left; transform: scaleX(0); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1); }

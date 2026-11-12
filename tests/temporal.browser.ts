@@ -23,3 +23,27 @@ test('canine halftone changes with time while the pointer stays fixed', async ({
   await page.screenshot({ path: info.outputPath('canine-time-3600.png'), clip: { x: 1300, y: 550, width: 500, height: 250 } })
   await info.attach('temporal-change', { body: JSON.stringify({ samplePixels: first.length, changedFraction: changed }), contentType: 'application/json' })
 })
+
+test('home contours update at the animation cadence', async ({ page }) => {
+  const time = new Date('2026-11-12T08:00:00Z')
+  await page.clock.install({ time })
+  await page.clock.pauseAt(time)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/')
+  await page.evaluate(() => document.fonts.ready)
+  await page.clock.runFor(600)
+  const group = page.locator('.valley .contour-field g')
+  await group.evaluate(element => {
+    let updates = 0
+    const count = element.children.length
+    element.setAttribute('data-probe-updates', '0')
+    new MutationObserver(records => {
+      updates += records.length / count
+      element.setAttribute('data-probe-updates', String(updates))
+    }).observe(element, { subtree: true, attributes: true, attributeFilter: ['d'] })
+  })
+  await page.clock.runFor(1000)
+  const updates = Number(await group.getAttribute('data-probe-updates'))
+  expect(updates).toBeGreaterThanOrEqual(50)
+  expect(updates).toBeLessThanOrEqual(65)
+})

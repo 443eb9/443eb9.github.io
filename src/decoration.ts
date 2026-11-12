@@ -1,3 +1,9 @@
+export function stripeShift(intercept: number, pointer: { x: number; y: number }): number {
+  const distance = (intercept - pointer.x - pointer.y) / Math.SQRT2
+  const falloff = Math.max(0, 1 - Math.abs(distance) / 64)
+  return (distance >= 0 ? 1 : -1) * 10 * falloff * falloff
+}
+
 export const GRAY_BLOCK_TIMING = { minimum: 5000, maximum: 15000, flash: 50 } as const
 
 export function grayBlockFrames(duration: number, flashes: number): Keyframe[] {
