@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useReducedMotion } from 'motion/react'
 import { contours } from 'd3-contour'
 import { createNoise3D } from 'simplex-noise'
@@ -58,7 +58,7 @@ export function NoiseField({ dense = false }: { dense?: boolean }) {
       if (reduced) draw(0)
     })
     observer.observe(canvas)
-    const parent = canvas.parentElement!
+    const parent = canvas.closest<HTMLElement>('.scene')!
     function move(event: PointerEvent) {
       const bounds = canvas.getBoundingClientRect()
       pointer = { x: event.clientX - bounds.left, y: event.clientY - bounds.top }
@@ -104,5 +104,9 @@ export function NoiseField({ dense = false }: { dense?: boolean }) {
 
 export function Corners({ seed = 0 }: { seed?: number }) {
   const id = useId()
-  return <span className="corners" aria-hidden="true">{[0, 1, 2, 3].map(i => <span key={`${id}-${i}`} className={`corner corner-${i} ${(seed * 7 + i * 3) % 4 < 2 ? 'filled' : ''}`} />)}</span>
+  const [filled] = useState(() => {
+    const random = randomSource(seed + Math.floor(Math.random() * 4294967296))
+    return Array.from({ length: 4 }, () => random() < 0.5)
+  })
+  return <span className="corners" aria-hidden="true">{[0, 1, 2, 3].map(i => <span key={`${id}-${i}`} className={`corner corner-${i} ${filled[i] ? 'filled' : ''}`} />)}</span>
 }

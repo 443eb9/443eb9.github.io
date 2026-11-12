@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import islands from './generated/islands.json'
 import { Contours, Corners, NoiseField } from './Fields'
 import { hash, islandPosition, islandShape, PAGE_SIZE } from './terrain'
@@ -27,6 +27,7 @@ function IslandTile({ island, index, day, selected, onSelect }: { island: Island
 }
 
 export function Log() {
+  const reduced = useReducedMotion()
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -62,7 +63,15 @@ export function Log() {
     setSelected(null)
   }
 
-  return <main className="log scene relative isolate overflow-hidden">
+  return <main className="log scene relative isolate overflow-hidden" onPointerMove={event => {
+    if (reduced || event.pointerType === 'touch') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    event.currentTarget.style.setProperty('--pointer-x', `${((event.clientX - bounds.left) / bounds.width - 0.5) * -20}px`)
+    event.currentTarget.style.setProperty('--pointer-y', `${((event.clientY - bounds.top) / bounds.height - 0.5) * -14}px`)
+  }} onPointerLeave={event => {
+    event.currentTarget.style.setProperty('--pointer-x', '0px')
+    event.currentTarget.style.setProperty('--pointer-y', '0px')
+  }}>
     <div className="log-background"><NoiseField dense /></div>
     <div className="log-mark" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</div>
     <header className="log-header flex items-start justify-between">

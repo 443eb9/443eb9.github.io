@@ -88,7 +88,7 @@ button:disabled { cursor: default; }
 .notice { position: absolute; right: 20%; bottom: 18px; font-size: 18px; z-index: 5; }
 
 .log { height: 100svh; min-height: 680px; }
-.log-background { position: absolute; inset: 0; background: #eef0ef; }
+.log-background { position: absolute; inset: -16px; background: #eef0ef; transform: translate(var(--pointer-x, 0px), var(--pointer-y, 0px)); transition: transform 0.2s ease-out; }
 .log-header { position: absolute; top: 3.5%; left: 3.2%; right: 2.5%; z-index: 12; pointer-events: none; }
 .log-header > * { pointer-events: auto; }
 .directory-toggle { display: flex; align-items: center; gap: 8px; background: var(--blue); color: var(--paper); padding: 4px 10px; font-size: 30px; line-height: 1.2; box-shadow: 8px 7px 0 #d2d2d2; }
@@ -101,7 +101,7 @@ button:disabled { cursor: default; }
 .barcode { flex: 1; margin-left: 8px; background: repeating-linear-gradient(0deg, var(--blue) 0 1px, transparent 1px 3px, var(--blue) 3px 5px, transparent 5px 7px); }
 .log-mark { position: absolute; top: -2%; right: 8%; display: grid; grid-template-columns: repeat(3, 40px); opacity: 0.4; }
 .log-mark i { height: 40px; border: 1px solid var(--blue); background: var(--gray); }
-.island-map { position: absolute; top: 0; left: 0; right: 0; bottom: 9%; }
+.island-map { position: absolute; top: 0; left: 0; right: 0; bottom: 9%; transform: translate(calc(var(--pointer-x, 0px) * 0.7), calc(var(--pointer-y, 0px) * 0.7)); transition: transform 0.2s ease-out; }
 .map-items { position: absolute; inset: 0; }
 .island { position: absolute; width: 220px; height: 220px; transform: translate(-50%, -50%); }
 .island:nth-child(2) { width: 300px; height: 300px; }
