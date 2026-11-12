@@ -7,7 +7,9 @@
     "dev": "vite --host 127.0.0.1",
     "content": "node scripts/content.mjs",
     "build": "npm run content && tsc -b && vite build && node scripts/pages.mjs",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/*.test.ts",
+    "test:browser": "npm run build && playwright test"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.0",

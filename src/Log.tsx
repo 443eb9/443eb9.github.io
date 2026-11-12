@@ -11,15 +11,23 @@ function IslandTile({ island, index, day, selected, onSelect }: { island: Island
   const position = islandPosition(index, day, island.id)
   const cells = useMemo(() => islandShape(hash(`${day}:${island.id}`)), [day, island.id])
   const shape = cells.map(([x, y]) => `M${x * 40},${y * 40}h40v40h-40Z`).join('')
+  const occupied = new Set(cells.map(([x, y]) => `${x},${y}`))
+  const border = cells.flatMap(([x, y]) => [
+    occupied.has(`${x},${y - 1}`) ? '' : `M${x * 40},${y * 40}h40`,
+    occupied.has(`${x + 1},${y}`) ? '' : `M${(x + 1) * 40},${y * 40}v40`,
+    occupied.has(`${x},${y + 1}`) ? '' : `M${x * 40},${(y + 1) * 40}h40`,
+    occupied.has(`${x - 1},${y}`) ? '' : `M${x * 40},${y * 40}v40`,
+  ]).join('')
   return <motion.div className={`island ${selected ? 'selected' : ''} island-${index}`} style={{ left: `clamp(85px, ${position.x}%, calc(100% - 85px))`, top: `${position.y}%` }}
     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, delay: index * 0.035 }}>
     <button className="island-hit" type="button" onClick={onSelect} aria-expanded={selected} aria-controls="island-card" aria-label={`展开 ${island.title}`}>
       <svg className="island-geometry" viewBox="0 0 200 200" aria-hidden="true">
         <defs><clipPath id={id}><path d={shape} /></clipPath></defs>
+        {selected && <g fill="none" strokeLinecap="square"><path d={border} stroke="var(--blue)" strokeWidth="14" /><path d={border} stroke="var(--paper)" strokeWidth="6" /></g>}
         <path d={shape} className="island-fill" />
         <foreignObject x="0" y="0" width="200" height="200" clipPath={`url(#${id})`}><Contours variant={hash(island.id) % 100} /></foreignObject>
         <path d={shape} fill="none" stroke="var(--blue)" strokeWidth="0.8" />
-        {selected && <g clipPath={`url(#${id})`}><path d="M-30,-30L230,230" stroke="var(--paper)" strokeWidth="24" /><rect x="94" y="94" width="12" height="12" fill="var(--paper)" /></g>}
+        {selected && <g clipPath={`url(#${id})`}><path d="M100,100L230,230" stroke="var(--paper)" strokeWidth="24" /><rect x="94" y="94" width="12" height="12" fill="var(--paper)" /></g>}
       </svg>
       <span className="island-title frame-label"><span>{island.title}</span><Corners seed={index} /></span>
     </button>
@@ -39,8 +47,9 @@ export function Log() {
   const activeIndex = visible.findIndex(island => island.id === selected)
   const position = active ? islandPosition(activeIndex, day, active.id) : null
   const narrow = width <= 800
-  const pageStart = narrow ? Math.max(1, Math.min(page - 1, count - 2)) : 1
-  const pageNumbers = Array.from({ length: narrow ? Math.min(3, count) : count }, (_, i) => pageStart + i)
+  const shownPages = Math.min(narrow ? 3 : 4, count)
+  const pageStart = Math.max(1, Math.min(page - 1, count - shownPages + 1))
+  const pageNumbers = Array.from({ length: shownPages }, (_, i) => pageStart + i)
   const anchorX = position ? Math.max(85000 / width, Math.min(position.x * 10, 1000 - 85000 / width)) : 0
 
   useEffect(() => {
@@ -72,7 +81,7 @@ export function Log() {
     event.currentTarget.style.setProperty('--pointer-x', '0px')
     event.currentTarget.style.setProperty('--pointer-y', '0px')
   }}>
-    <div className="log-background"><NoiseField dense /></div>
+    <div className="log-background"><NoiseField kind="sea" /></div>
     <div className="log-mark" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</div>
     <header className="log-header flex items-start justify-between">
       <div className="directory">
@@ -89,7 +98,7 @@ export function Log() {
       </motion.div></AnimatePresence>
       <AnimatePresence>{active && position && <motion.div className="selection" key={active.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <svg className="connector" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
-          <motion.path d={`M${anchorX},${position.y * 5.6}L${narrow ? 100 : 450},220`} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.4 }} />
+          <motion.path d={`M${anchorX},${position.y * 5.6}L${narrow ? 100 : 444},${narrow ? 212.8 : 215.04}`} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.4 }} />
           <rect x={anchorX - 5} y={position.y * 5.6 - 5} width="10" height="10" />
         </svg>
         <motion.article id="island-card" className="island-card" aria-live="polite" initial={{ clipPath: 'inset(0 100% 0 0)' }} animate={{ clipPath: 'inset(-20px -20px -30px -20px)' }} transition={{ duration: 0.3 }} aria-label={active.title}>

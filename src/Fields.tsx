@@ -3,6 +3,7 @@ import { useReducedMotion } from 'motion/react'
 import { contours } from 'd3-contour'
 import { createNoise3D } from 'simplex-noise'
 import { randomSource } from './terrain'
+import { createHalftone } from './halftone'
 
 export function Contours({ variant = 0 }: { variant?: number }) {
   const paths = useRef<SVGGElement>(null)
@@ -10,83 +11,90 @@ export function Contours({ variant = 0 }: { variant?: number }) {
 
   useEffect(() => {
     const noise = createNoise3D(randomSource(107 + variant))
-    const generator = contours().size([48, 32]).thresholds([-0.55, -0.3, -0.05, 0.2, 0.45])
+    const generator = contours().size([64, 40]).thresholds([-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6])
     let frame = 0
     let last = -Infinity
+    let aspect = 1.6
+    const observer = new ResizeObserver(([entry]) => {
+      aspect = entry.contentRect.width / entry.contentRect.height
+      last = -Infinity
+      if (reduced) draw(0)
+    })
+    observer.observe(paths.current!.ownerSVGElement!)
     function draw(now: number) {
       if (now - last >= 100) {
         last = now
-        const time = reduced ? 0 : now * 0.000035
-        const values = Array.from({ length: 48 * 32 }, (_, i) => noise((i % 48) / 24 + variant, Math.floor(i / 48) / 24, time))
-        const geometry = generator(values)
+        const time = reduced ? 0 : now * 0.00002
+        const values = Array.from({ length: 64 * 40 }, (_, i) => noise((i % 64) / 64 * aspect * 0.95 + variant, Math.floor(i / 64) / 40 * 0.95, time))
         const children = paths.current?.children
-        geometry.forEach((contour, index) => {
-          const d = contour.coordinates.flatMap(polygon => polygon.map(ring => `M${ring.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join('L')}Z`)).join('')
+        generator(values).forEach((contour, index) => {
+          const d = contour.coordinates.flatMap(polygon => polygon.map(ring => {
+            const first = ring[0]
+            const end = ring[ring.length - 1]
+            let path = `M${(first[0] + end[0]) / 2},${(first[1] + end[1]) / 2}`
+            ring.forEach((point, i) => {
+              const next = ring[(i + 1) % ring.length]
+              path += `Q${point[0].toFixed(2)},${point[1].toFixed(2)} ${((point[0] + next[0]) / 2).toFixed(2)},${((point[1] + next[1]) / 2).toFixed(2)}`
+            })
+            return `${path}Z`
+          })).join('')
           children?.[index]?.setAttribute('d', d)
         })
       }
       if (!reduced) frame = requestAnimationFrame(draw)
     }
     frame = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(frame)
+    return () => { observer.disconnect(); cancelAnimationFrame(frame) }
   }, [variant, reduced])
 
-  return <svg className="contour-field" viewBox="0 0 48 32" preserveAspectRatio="none" aria-hidden="true">
-    <g ref={paths} fill="none" stroke="currentColor" strokeWidth="0.22">{Array.from({ length: 5 }, (_, i) => <path key={i} />)}</g>
+  return <svg className="contour-field" viewBox="0 0 64 40" preserveAspectRatio="none" aria-hidden="true">
+    <g ref={paths} fill="none" stroke="currentColor" strokeWidth="0.32">{Array.from({ length: 7 }, (_, i) => <path key={i} />)}</g>
   </svg>
 }
 
-export function NoiseField({ dense = false }: { dense?: boolean }) {
+export function NoiseField({ kind }: { kind: 'canine' | 'sea' }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const reduced = useReducedMotion()
 
   useEffect(() => {
     const canvas = ref.current!
     const context = canvas.getContext('2d')!
+    const scene = canvas.closest<HTMLElement>('.scene')!
     const noise = createNoise3D(randomSource(443))
-    let width = 0
-    let height = 0
+    const speed = kind === 'canine' ? 0.00018 : 0.00006
+    let image: ImageData
+    let render: ReturnType<typeof createHalftone>
     let frame = 0
     let last = -Infinity
-    let pointer = { x: -1000, y: -1000 }
+    let pointer = { x: -10000, y: -10000 }
     const observer = new ResizeObserver(([entry]) => {
-      width = entry.contentRect.width
-      height = entry.contentRect.height
-      canvas.width = Math.round(width)
-      canvas.height = Math.round(height)
+      canvas.width = Math.ceil(entry.contentRect.width)
+      canvas.height = Math.ceil(entry.contentRect.height)
+      const unit = Math.max(0.75, scene.clientWidth / 1188)
+      image = context.createImageData(canvas.width, canvas.height)
+      render = createHalftone(image, noise, kind, unit)
       last = -Infinity
       if (reduced) draw(0)
     })
     observer.observe(canvas)
-    const parent = canvas.closest<HTMLElement>('.scene')!
+
     function move(event: PointerEvent) {
       const bounds = canvas.getBoundingClientRect()
       pointer = { x: event.clientX - bounds.left, y: event.clientY - bounds.top }
       if (reduced) draw(0)
     }
     function leave() {
-      pointer = { x: -1000, y: -1000 }
+      pointer = { x: -10000, y: -10000 }
       if (reduced) draw(0)
     }
-    parent.addEventListener('pointermove', move)
-    parent.addEventListener('pointerleave', leave)
+    scene.addEventListener('pointermove', move)
+    scene.addEventListener('pointerleave', leave)
 
     function draw(now: number) {
-      if (now - last >= 85 || reduced) {
+      if (image && (now - last >= 1000 / 24 || reduced)) {
         last = now
-        context.clearRect(0, 0, width, height)
-        const time = reduced ? 0 : now * 0.00012
-        context.fillStyle = dense ? '#4960ff88' : '#4960ff38'
-        for (let y = 2; y < height; y += 6) {
-          for (let x = 2; x < width; x += 6) {
-            const value = (noise(x / 280, y / 280, time) + 1) / 2
-            const falloff = Math.max(0, 1 - Math.hypot(x - pointer.x, y - pointer.y) / 190)
-            const radius = Math.max(0.2, value * (dense ? 1.65 : 1.3) + falloff * 1.6)
-            context.beginPath()
-            context.arc(x + (Math.round(y / 6) % 2) * 3, y, radius, 0, Math.PI * 2)
-            context.fill()
-          }
-        }
+        render(reduced ? 0 : now * speed, pointer)
+        context.putImageData(image, 0, 0)
       }
       if (!reduced) frame = requestAnimationFrame(draw)
     }
@@ -94,10 +102,10 @@ export function NoiseField({ dense = false }: { dense?: boolean }) {
     return () => {
       observer.disconnect()
       cancelAnimationFrame(frame)
-      parent.removeEventListener('pointermove', move)
-      parent.removeEventListener('pointerleave', leave)
+      scene.removeEventListener('pointermove', move)
+      scene.removeEventListener('pointerleave', leave)
     }
-  }, [dense, reduced])
+  }, [kind, reduced])
 
   return <canvas ref={ref} className="noise-field" aria-hidden="true" />
 }
