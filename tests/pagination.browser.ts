@@ -11,6 +11,11 @@ test('digits preserve the page range and arrows keep selection inside it until a
   }
   const next = page.getByRole('button', { name: '下一页', exact: true })
   const previous = page.getByRole('button', { name: '上一页', exact: true })
+  await expect(previous).toBeDisabled()
+  await previous.hover()
+  await expect(previous).toHaveCSS('opacity', '1')
+  await expect(previous.locator('.page-button-label')).toHaveCSS('color', 'rgb(119, 119, 119)')
+  await expect(previous.locator('.page-button-cover')).toHaveCSS('clip-path', 'inset(100% 0px 0px)')
   await next.click()
   await check(2, ['1', '2', '3', '4'])
   await next.click()
@@ -29,6 +34,9 @@ test('digits preserve the page range and arrows keep selection inside it until a
     await check(number, Array.from({ length: 4 }, (_, index) => String(start + index)))
   }
   await expect(next).toBeDisabled()
+  await next.hover()
+  await expect(next).toHaveCSS('opacity', '1')
+  await expect(next.locator('.page-button-label')).toHaveCSS('color', 'rgb(119, 119, 119)')
   await previous.click()
   await check(6, ['4', '5', '6', '7'])
 })

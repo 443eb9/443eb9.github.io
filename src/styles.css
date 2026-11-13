@@ -184,10 +184,10 @@ button:disabled { cursor: default; }
 .page-button::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--blue); }
 .page-button-cover { position: absolute; inset: 0; display: grid; place-items: center; color: var(--paper); }
 .page-button::before, .page-button-cover { clip-path: inset(100% 0 0 0); transition: clip-path 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
-.page-button:hover::before, .page-button:hover .page-button-cover, .page-button[aria-current]::before, .page-button[aria-current] .page-button-cover { clip-path: inset(0); }
+.page-button:enabled:hover::before, .page-button:enabled:hover .page-button-cover, .page-button[aria-current]::before, .page-button[aria-current] .page-button-cover { clip-path: inset(0); }
 .page-button[aria-current]::before, .page-button[aria-current] .page-button-cover { animation: page-sweep 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
 @keyframes page-sweep { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0); } }
-.page-button:disabled { opacity: 0.45; }
+.page-button:disabled { color: #777; }
 .missing { min-height: 100svh; display: grid; place-content: center; gap: 30px; padding: 30px; }
 .missing h1 { font-size: 24px; }
 
