@@ -37,7 +37,7 @@ export function Home() {
       <svg className="left-rail" viewBox="0 0 30 124" aria-hidden="true"><path fill="var(--gray)" d="M2.5 30h19.5v41H7v53H2.5Z" /><path fill="var(--blue)" d="M0 0h22v31H3v73H0Z" /></svg>
       <div className="vertical-rail" aria-hidden="true" />
       <header className="identity flex items-start">
-        <img src="/images/avatar-original.png" className="avatar" width="164" height="164" alt="443eb9#C 的兽耳角色头像" />
+        <img src="/images/avatar-original.png" className="avatar" width="164" height="164" alt="头像" />
         <div className="identity-copy"><p className="intro">I am</p><h1>44eb9#C</h1><div className="role-area"><ScanText /></div>
           <svg className="identity-rules" viewBox="0 0 181 44" aria-hidden="true"><g fill="currentColor"><path d="M0 5h13v13H0ZM26 5h13v13H26ZM13 18h13v13H13ZM0 31h13v13H0ZM26 31h13v13H26Z" /><path d="M0 0h181v2.5H0ZM42 6h139v2.5H42ZM42 12.5h139v3H42ZM42 18.5h139V21H42ZM42 25h139v3H42Z" /></g></svg>
         </div>
