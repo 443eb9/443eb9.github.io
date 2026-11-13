@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { type ContourCanvas, installContourProbe } from './contour-probe.ts'
 
 test('sea dots keep their world positions while the map is dragged', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -58,21 +59,22 @@ test('sea dots keep their world positions while the map is dragged', async ({ pa
 
 for (const route of ['/', '/log/']) {
   test(`contours gain local height around the pointer on ${route}`, async ({ page }) => {
+    await installContourProbe(page)
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.setViewportSize({ width: 1188, height: 666 })
     await page.goto(route)
     const field = page.locator('.contour-field').first()
-    await expect(field.locator('path').first()).toHaveAttribute('d', /^M/)
+    const signature = () => field.locator('canvas').evaluate(element => (element as ContourCanvas).contourPixels?.reduce((hash, value) => Math.imul(hash ^ value, 16777619), 2166136261))
+    await expect.poll(signature).toBeDefined()
     await page.mouse.move(-1000, -1000)
-    const paths = () => field.locator('path').evaluateAll(elements => elements.map(element => element.getAttribute('d')))
-    const initial = await paths()
+    const initial = await signature()
     const bounds = await field.boundingBox()
     expect(bounds).toBeTruthy()
     const x = route === '/' ? bounds!.x + bounds!.width / 2 : 450
     const y = route === '/' ? bounds!.y + bounds!.height / 2 : 350
     await page.mouse.move(x, y)
-    await expect.poll(paths).not.toEqual(initial)
+    await expect.poll(signature).not.toEqual(initial)
     await page.mouse.move(-1000, -1000)
-    await expect.poll(paths).toEqual(initial)
+    await expect.poll(signature).toEqual(initial)
   })
 }

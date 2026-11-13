@@ -42,7 +42,8 @@ button:disabled { cursor: default; }
 .layer-five { z-index: 4; }
 .layer-five a, .layer-five button { pointer-events: auto; }
 .sea-field, .noise-field, .contour-field { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.contour-field path { vector-effect: non-scaling-stroke; stroke-width: calc(2.75 * var(--u)); }
+.contour-field { stroke-width: calc(2.75 * var(--u)); }
+.contour-field canvas { display: block; width: 100%; height: 100%; }
 .canine { position: absolute; left: 23.906%; top: -1.877%; height: 105.03%; width: 53.493%; background: url('/images/canine.png') center / contain no-repeat; }
 .canine .noise-field { mask: url('/images/canine.png') center / contain no-repeat; }
 .canine-outline { background: color-mix(in srgb, #fff, var(--blue) 33%); mask: url('/images/canine-outline.png') center / contain no-repeat; }
@@ -139,7 +140,7 @@ button:disabled { cursor: default; }
 .map-items:active { cursor: grabbing; }
 .terrain-map { pointer-events: none; }
 .terrain-map .contour-field { color: var(--blue); }
-.terrain-map .contour-field path { stroke-width: calc(1.25 * var(--u)); }
+.terrain-map .contour-field { stroke-width: calc(1.25 * var(--u)); }
 .island { position: absolute; width: calc(5 * var(--land-size)); height: calc(5 * var(--land-size)); transform: translate(-50%, -50%); }
 .island-hit { position: relative; width: 100%; height: 100%; background: transparent; border: 0; pointer-events: none; }
 .island-hit-shape { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -182,7 +183,7 @@ button:disabled { cursor: default; }
 .tag-corner-1, .tag-corner-3 { right: calc(-5 * var(--u)); border-left: 0; }
 .tag-corner-0, .tag-corner-1 { top: calc(-5 * var(--u)); border-bottom: 0; }
 .tag-corner-2, .tag-corner-3 { bottom: calc(-5 * var(--u)); border-top: 0; }
-.card-date { position: absolute; bottom: calc(-25 * var(--u)); right: calc(10 * var(--u)); font-size: calc(12.5 * var(--u)); background: transparent; border-bottom: calc(2 * var(--u)) solid var(--blue); }
+.card-date { position: absolute; bottom: calc(-25 * var(--u)); right: calc(10 * var(--u)); font-size: calc(12.5 * var(--u)); background: transparent; border-bottom: calc(4 * var(--u)) solid var(--blue); }
 .log-footer { position: absolute; bottom: 3%; left: 3%; right: 2%; z-index: 8; gap: 20px; pointer-events: none; }
 .page-coordinate { font-size: calc(12 * var(--u)); background: var(--paper); padding: 2px 4px; }
 .pagination { gap: calc(24 * var(--u)); pointer-events: auto; }

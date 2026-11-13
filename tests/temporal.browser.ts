@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { type ContourCanvas, installContourProbe } from './contour-probe.ts'
 
 test('canine halftone changes with time while the pointer stays fixed', async ({ page }, info) => {
   const time = new Date('2026-11-12T08:00:00Z')
@@ -25,6 +26,7 @@ test('canine halftone changes with time while the pointer stays fixed', async ({
 })
 
 test('home contours update at the animation cadence', async ({ page }) => {
+  await installContourProbe(page, false)
   const time = new Date('2026-11-12T08:00:00Z')
   await page.clock.install({ time })
   await page.clock.pauseAt(time)
@@ -32,18 +34,11 @@ test('home contours update at the animation cadence', async ({ page }) => {
   await page.goto('/')
   await page.evaluate(() => document.fonts.ready)
   await page.clock.runFor(600)
-  const group = page.locator('.valley .contour-field g')
-  await group.evaluate(element => {
-    let updates = 0
-    const count = element.children.length
-    element.setAttribute('data-probe-updates', '0')
-    new MutationObserver(records => {
-      updates += records.length / count
-      element.setAttribute('data-probe-updates', String(updates))
-    }).observe(element, { subtree: true, attributes: true, attributeFilter: ['d'] })
-  })
+  const canvas = page.locator('.valley .contour-field canvas')
+  const count = () => canvas.evaluate(element => (element as ContourCanvas).contourDraws ?? 0)
+  const before = await count()
   await page.clock.runFor(1000)
-  const updates = Number(await group.getAttribute('data-probe-updates'))
+  const updates = await count() - before
   expect(updates).toBeGreaterThanOrEqual(50)
   expect(updates).toBeLessThanOrEqual(65)
 })

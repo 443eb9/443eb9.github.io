@@ -66,7 +66,7 @@ test('world grid, hover colors, card graphics and regular description text match
   expect(selection.gridLast).toBe(true)
   expect(selection.gridColor).toBe('rgb(246, 246, 246)')
   expect(await page.locator('.directory-marker').evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
-  await expect(page.locator('.terrain-map .contour-field path').first()).toHaveCSS('stroke-width', '2.5px')
+  await expect(page.locator('.terrain-map .contour-field').first()).toHaveCSS('stroke-width', '2.5px')
   await expect(card.locator('.card-description')).toHaveCSS('font-weight', '400')
   await expect(card.locator('.card-date')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await expect(card.locator('.card-date')).toHaveCSS('border-bottom-color', 'rgb(70, 100, 244)')
