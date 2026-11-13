@@ -62,9 +62,10 @@ export function logGrid(width: number) {
   return { size: width <= 800 ? 26 : 52, x: width <= 800 ? 4 : 30, y: 17 }
 }
 
-export function islandLayouts(ids: string[], day: string, width: number, height: number) {
+export function islandLayouts(ids: string[], day: string, width: number, height: number, labelSizes: Record<string, { width: number; height: number }> = {}) {
   const grid = logGrid(width)
   const occupied = new Set<string>()
+  const placedLabels: { x: number; y: number; width: number; height: number }[] = []
   return ids.map((id, index) => {
     const position = islandPosition(index, day, id)
     const cells = islandShape(hash(`${day}:${id}`))
@@ -80,18 +81,29 @@ export function islandLayouts(ids: string[], day: string, width: number, height:
         }
       }
       candidates.sort((a, b) => (a.x - column) ** 2 + (a.y - row) ** 2 - (b.x - column) ** 2 - (b.y - row) ** 2)
-      origin = candidates.find(candidate => cells.every(([x, y]) => {
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (occupied.has(`${candidate.x + x + dx},${candidate.y + y + dy}`)) return false
+      origin = candidates.find(candidate => {
+        const label = labelSizes[id]
+        const centerX = grid.x + (candidate.x + 2.5) * grid.size
+        const centerY = grid.y + (candidate.y + 2.5) * grid.size
+        if (label && placedLabels.some(other => Math.abs(centerX - other.x) < (label.width + other.width) / 2 + 16
+          && Math.abs(centerY - other.y) < (label.height + other.height) / 2 + 16)) return false
+
+        return cells.every(([x, y]) => {
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (occupied.has(`${candidate.x + x + dx},${candidate.y + y + dy}`)) return false
+            }
           }
-        }
-        return true
-      }))
+          return true
+        })
+      })
       radius++
     }
     for (const [x, y] of cells) occupied.add(`${origin.x + x},${origin.y + y}`)
-    return createIslandLayout(cells, grid.x + origin.x * grid.size, grid.y + origin.y * grid.size, grid.size)
+    const layout = createIslandLayout(cells, grid.x + origin.x * grid.size, grid.y + origin.y * grid.size, grid.size)
+    const label = labelSizes[id]
+    if (label) placedLabels.push({ x: layout.center.x, y: layout.center.y, ...label })
+    return layout
   })
 }
 

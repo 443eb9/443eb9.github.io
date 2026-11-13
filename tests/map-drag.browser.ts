@@ -4,16 +4,22 @@ test('page two islands stay separated and map dragging stays inside padded terra
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.setViewportSize({ width: 390, height: 740 })
   await page.goto('/log/')
+  await page.evaluate(() => document.fonts.ready)
   await page.getByRole('button', { name: '第 2 页', exact: true }).click()
   const read = () => page.locator('.map-items').evaluate(element => {
     const matrix = new DOMMatrix(getComputedStyle(element).transform)
     const cells = Array.from(element.querySelectorAll('.land-cell'), cell => ({ x: Number(cell.getAttribute('x')) - 1, y: Number(cell.getAttribute('y')) - 1 }))
     const size = Number(element.querySelector('pattern')!.getAttribute('width'))
+    const labels = Array.from(element.querySelectorAll('.island:not([inert]) .island-title'), label => label.getBoundingClientRect())
+    const left = Math.min(...cells.map(cell => cell.x - 9), ...labels.map(label => label.left - matrix.e))
+    const right = Math.max(...cells.map(cell => cell.x + size + 9), ...labels.map(label => label.right - matrix.e))
+    const top = Math.min(...cells.map(cell => cell.y - 9), ...labels.map(label => label.top - matrix.f))
+    const bottom = Math.max(...cells.map(cell => cell.y + size + 9), ...labels.map(label => label.bottom - matrix.f))
+    const centerX = (390 - left - right) / 2
+    const centerY = (740 - top - bottom) / 2
     return { x: matrix.e, y: matrix.f,
-      minX: 390 - Math.max(...cells.map(cell => cell.x + size)) - 9 - size,
-      maxX: -Math.min(...cells.map(cell => cell.x)) + 9 + size,
-      minY: 740 - Math.max(...cells.map(cell => cell.y + size)) - 9 - size,
-      maxY: -Math.min(...cells.map(cell => cell.y)) + 9 + size }
+      minX: Math.min(390 - right - size, centerX), maxX: Math.max(-left + size, centerX),
+      minY: Math.min(740 - bottom - size, centerY), maxY: Math.max(-top + size, centerY) }
   })
   const before = await read()
   await page.mouse.move(300, 350)
@@ -25,7 +31,7 @@ test('page two islands stay separated and map dragging stays inside padded terra
   expect(after.x).toBeCloseTo(after.minX, 1)
   expect(after.y).toBeCloseTo(after.minY, 1)
   await expect(page.locator('#island-card')).toHaveCount(0)
-  await page.mouse.move(200, 350)
+  await page.mouse.move(5, 350)
   await page.mouse.down()
   await page.mouse.move(1800, 1800, { steps: 8 })
   await page.mouse.up()

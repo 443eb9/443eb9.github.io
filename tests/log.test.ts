@@ -22,6 +22,25 @@ test('islands use the same world grid and central cell at desktop and mobile wid
   }
 })
 
+test('measured long island labels keep their corner decorations separated across dates and widths', () => {
+  const ids = Array.from({ length: 7 }, (_, index) => `island-${index}`)
+  const labels = Object.fromEntries(ids.map((id, index) => [id, { width: 500 + index * 80, height: 36 + index * 2 }]))
+  for (const width of [320, 390, 1188]) {
+    for (let day = 1; day <= 28; day++) {
+      const layouts = islandLayouts(ids, `2026-11-${String(day).padStart(2, '0')}`, width, 740, labels)
+      for (const [index, layout] of layouts.entries()) {
+        for (let previous = 0; previous < index; previous++) {
+          const other = layouts[previous]
+          const horizontalGap = Math.abs(layout.center.x - other.center.x) - (labels[ids[index]].width + labels[ids[previous]].width) / 2
+          const verticalGap = Math.abs(layout.center.y - other.center.y) - (labels[ids[index]].height + labels[ids[previous]].height) / 2
+          assert.ok(horizontalGap >= 16 || verticalGap >= 16, `${width}, day ${day}, labels ${previous} and ${index}`)
+        }
+      }
+      assert.deepEqual(layouts, islandLayouts(ids, `2026-11-${String(day).padStart(2, '0')}`, width, 740, labels))
+    }
+  }
+})
+
 test('cards open toward the opposite quadrant and connect to the facing corner', () => {
   const world = { width: 1188, height: 666 }
   const card = { width: 420, height: 200 }

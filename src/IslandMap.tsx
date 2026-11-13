@@ -149,23 +149,21 @@ export function IslandMap({ items, mode, page, setPage, playbackVideo }: { items
   const unit = narrow ? 1 : window.innerWidth / 1188
   const world = { width: size.width / unit, height: size.height / unit }
   const grid = logGrid(world.width)
-  const layouts = useMemo(() => islandLayouts(visible.map(island => island.id), day, world.width, world.height), [visible, day, world.width, world.height])
+  const layouts = useMemo(() => islandLayouts(visible.map(island => island.id), day, world.width, world.height, labelSizes), [visible, day, world.width, world.height, labelSizes])
   const mapBounds = {
     left: Math.min(...layouts.map(layout => layout.bounds.left)) - grid.size,
     top: Math.min(...layouts.map(layout => layout.bounds.top)) - grid.size,
     right: Math.max(...layouts.map(layout => layout.bounds.right)) + grid.size,
     bottom: Math.max(...layouts.map(layout => layout.bounds.bottom)) + grid.size,
   }
-  if (mode === 'friends') {
-    for (const [index, island] of visible.entries()) {
-      const label = labelSizes[island.id]
-      if (!label) continue
-      const center = layouts[index].center
-      mapBounds.left = Math.min(mapBounds.left, center.x - label.width / 2 - grid.size)
-      mapBounds.right = Math.max(mapBounds.right, center.x + label.width / 2 + grid.size)
-      mapBounds.top = Math.min(mapBounds.top, center.y - label.height / 2 - grid.size)
-      mapBounds.bottom = Math.max(mapBounds.bottom, center.y + label.height / 2 + grid.size)
-    }
+  for (const [index, island] of visible.entries()) {
+    const label = labelSizes[island.id]
+    if (!label) continue
+    const center = layouts[index].center
+    mapBounds.left = Math.min(mapBounds.left, center.x - label.width / 2 - grid.size)
+    mapBounds.right = Math.max(mapBounds.right, center.x + label.width / 2 + grid.size)
+    mapBounds.top = Math.min(mapBounds.top, center.y - label.height / 2 - grid.size)
+    mapBounds.bottom = Math.max(mapBounds.bottom, center.y + label.height / 2 + grid.size)
   }
   const area = mode === 'friends' ? { left: 16 * unit, top: 96 * unit, right: size.width - 16 * unit, bottom: size.height - (count > 1 ? 96 : 16) * unit } : { left: 0, top: 0, right: size.width, bottom: size.height }
   const mapScale = mode === 'friends' ? Math.min(1, Math.max(1, area.right - area.left) / ((mapBounds.right - mapBounds.left) * unit), Math.max(1, area.bottom - area.top) / ((mapBounds.bottom - mapBounds.top) * unit)) : 1
@@ -193,7 +191,7 @@ export function IslandMap({ items, mode, page, setPage, playbackVideo }: { items
   const cells = useMemo(() => layouts.flatMap((layout, islandIndex) => layout.cells.map(([x, y]) => ({ x: layout.left + x * grid.size, y: layout.top + y * grid.size, islandIndex }))), [layouts, grid.size])
 
   useLayoutEffect(() => {
-    if (mode !== 'friends' || !mapItems.current) return
+    if (!mapItems.current) return
     const labels = Array.from(mapItems.current.querySelectorAll<HTMLElement>('.island:not([inert]) .island-title'))
     const measure = () => {
       const next: Record<string, { width: number; height: number }> = {}
@@ -208,7 +206,7 @@ export function IslandMap({ items, mode, page, setPage, playbackVideo }: { items
     const observer = new ResizeObserver(measure)
     for (const label of labels) observer.observe(label)
     return () => observer.disconnect()
-  }, [mode, visible, mapUnit])
+  }, [visible, layouts, mapUnit])
 
   useLayoutEffect(() => {
     const x = Math.max(dragBounds.left, Math.min(0, dragBounds.right))
@@ -282,7 +280,9 @@ export function IslandMap({ items, mode, page, setPage, playbackVideo }: { items
       dragged.current = false
       if ((event.target as Element).closest('.selection')) return
       dragControls.start(event)
-    }} onClickCapture={event => { if (dragged.current) { event.preventDefault(); event.stopPropagation() } }}>
+    }} onClickCapture={event => { if (dragged.current) { event.preventDefault(); event.stopPropagation() } }} onClick={event => {
+      if (!(event.target as Element).closest('.island, .selection')) setSelected(null)
+    }}>
       <motion.div ref={mapItems} className="map-items" drag dragControls={dragControls} dragListener={false} dragConstraints={dragBounds} dragElastic={0} dragMomentum={false} style={{ x: panX, y: panY, ...{ '--u': `${mapUnit}px`, '--land-size': `${grid.size * mapUnit}px` } }}  onDragStart={() => { dragged.current = true }}>
         <svg className="terrain-map" style={{ left: mapArea.left * mapUnit, top: mapArea.top * mapUnit, width: (mapArea.right - mapArea.left) * mapUnit, height: (mapArea.bottom - mapArea.top) * mapUnit }} viewBox={`${mapArea.left} ${mapArea.top} ${mapArea.right - mapArea.left} ${mapArea.bottom - mapArea.top}`} preserveAspectRatio="none" aria-hidden="true">
           <defs>
