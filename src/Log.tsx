@@ -23,7 +23,7 @@ function IslandSelection({ island, layout, world, unit, index, onClose }: { isla
   const reduced = useReducedMotion()
   const cardRef = useRef<HTMLElement>(null)
   const [cardSize, setCardSize] = useState<{ width: number; height: number } | null>(null)
-  const placement = cardSize ? cardLayout(layout.center, cardSize, world) : null
+  const placement = cardSize ? cardLayout(layout, cardSize, world) : null
   const ray = placement ? `M${layout.center.x},${layout.center.y}L${placement.end.x},${placement.end.y}` : ''
   const [expanded, setExpanded] = useState(false)
   const progress = useMotionValue(reduced ? 1 : 0)

@@ -16,13 +16,16 @@ test('cards follow opposite islands and connect to the facing corners', async ({
       const path = svg.querySelector('path') as SVGPathElement
       const island = document.querySelector('.island.selected')!.getBoundingClientRect()
       const card = document.querySelector('#island-card')!.getBoundingClientRect()
+      const land = document.querySelector('.selected-land')!.getBoundingClientRect()
+      const overlap = Math.max(0, Math.min(card.right, land.right + 7) - Math.max(card.left, land.left - 7)) * Math.max(0, Math.min(card.bottom, land.bottom + 7) - Math.max(card.top, land.top - 7))
       const center = { x: island.x + island.width / 2, y: island.y + island.height / 2 }
       const end = path.getPointAtLength(path.getTotalLength()).matrixTransform(svg.getScreenCTM()!)
-      return { left: card.left, top: card.top, right: card.right, bottom: card.bottom, center,
+      return { overlap, left: card.left, top: card.top, right: card.right, bottom: card.bottom, center,
         cx: card.x + card.width / 2, cy: card.y + card.height / 2,
         dx: end.x - (center.x > card.x + card.width / 2 ? card.right : card.left),
         dy: end.y - (center.y > card.y + card.height / 2 ? card.bottom : card.top) }
     })
+    expect(value.overlap).toBe(0)
     expect(value.cx > value.center.x).toBe(value.center.x < 594)
     expect(value.cy > value.center.y).toBe(value.center.y < 333)
     expect(Math.abs(value.dx)).toBeLessThan(0.15)

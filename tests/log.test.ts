@@ -21,7 +21,7 @@ test('cards open toward the opposite quadrant and connect to the facing corner',
   const world = { width: 1188, height: 666 }
   const card = { width: 420, height: 200 }
   for (const [x, y, corner] of [[200, 500, 2], [1000, 150, 1], [200, 150, 0], [1000, 500, 3]]) {
-    const result = cardLayout({ x, y }, card, world)
+    const result = cardLayout({ center: { x, y }, bounds: { left: x - 70, top: y - 70, right: x + 70, bottom: y + 70 } }, card, world)
     assert.equal(result.corner, corner)
     assert.ok(result.left >= 16 && result.left + card.width <= world.width - 16)
     assert.ok(result.top >= 90 && result.top + card.height <= world.height - 90)
@@ -38,12 +38,26 @@ test('cards stay inside mobile bounds with measured sizes near viewport edges', 
     for (const center of [{ x: 10, y: 10 }, { x: width - 10, y: 730 }]) {
       for (const height of [180, 400]) {
         const card = { width: width * 0.8, height }
-        const result = cardLayout(center, card, world)
+        const result = cardLayout({ center, bounds: { left: center.x - 65, top: center.y - 65, right: center.x + 65, bottom: center.y + 65 } }, card, world)
         assert.ok(result.left >= 16 && result.left + card.width <= width - 16)
         assert.ok(result.top >= 90 && result.top + height <= 650)
       }
     }
   }
+})
+
+test('card placement separates island bounds and minimizes overlap in constrained space', () => {
+  const island = { center: { x: 350, y: 350 }, bounds: { left: 200, top: 200, right: 500, bottom: 500 } }
+  const card = { width: 420, height: 200 }
+  const placed = cardLayout(island, card, { width: 1188, height: 666 })
+  assert.ok(placed.left >= island.bounds.right || placed.left + card.width <= island.bounds.left || placed.top >= island.bounds.bottom || placed.top + card.height <= island.bounds.top)
+
+  const constrained = { center: { x: 160, y: 370 }, bounds: { left: 60, top: 250, right: 260, bottom: 490 } }
+  const largeCard = { width: 256, height: 400 }
+  const result = cardLayout(constrained, largeCard, { width: 320, height: 740 })
+  const overlap = (left: number, top: number) => Math.max(0, Math.min(left + 256, 260) - Math.max(left, 60)) * Math.max(0, Math.min(top + 400, 490) - Math.max(top, 250))
+  const minimum = Math.min(...[16, 48].flatMap(left => [90, 250].map(top => overlap(left, top))))
+  assert.equal(overlap(result.left, result.top), minimum)
 })
 
 test('sea dots have continuous coverage and preserve their colors under the pointer', () => {
