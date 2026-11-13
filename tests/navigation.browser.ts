@@ -22,7 +22,7 @@ test('navigation reveals the new page left of the blue bar and supports history 
   })
   expect(wipe.left).toBeGreaterThan(0)
   expect(wipe.left).toBeLessThan(1188)
-  expect(wipe.width).toBeCloseTo(1188 * 0.08, 1)
+  expect(wipe.width).toBeCloseTo(1188 * 0.24, 1)
   expect(wipe.height).toBe(666)
   expect(1188 * (1 - wipe.inset / 100)).toBeCloseTo(wipe.left, 1)
   expect(wipe.inert).toBe(true)

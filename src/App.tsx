@@ -3,7 +3,7 @@ import { animate, motion, useMotionValue, useTransform } from 'motion/react'
 import { Home } from './Home'
 import { Log } from './Log'
 
-const WIPE = { duration: 0.65, width: 8 } as const
+const WIPE = { duration: 0.65, width: 24 } as const
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
 
 function subscribeReducedMotion(onChange: () => void) {
