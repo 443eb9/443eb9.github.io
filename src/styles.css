@@ -131,11 +131,15 @@ button:disabled { cursor: default; }
 .log-mark { position: absolute; top: -2%; right: 8%; display: grid; grid-template-columns: repeat(3, calc(40 * var(--u))); opacity: 0.6; }
 .log-mark i { height: calc(40 * var(--u)); border: 1px solid var(--blue); background: var(--gray); }
 .island-map, .map-items, .terrain-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map-items { touch-action: none; cursor: grab; }
+.map-items:active { cursor: grabbing; }
 .terrain-map { pointer-events: none; }
 .terrain-map .contour-field { color: var(--blue); }
 .terrain-map .contour-field path { stroke-width: calc(1.25 * var(--u)); }
 .island { position: absolute; width: calc(5 * var(--land-size)); height: calc(5 * var(--land-size)); transform: translate(-50%, -50%); }
-.island-hit { position: relative; width: 100%; height: 100%; background: transparent; border: 0; }
+.island-hit { position: relative; width: 100%; height: 100%; background: transparent; border: 0; pointer-events: none; }
+.island-hit-shape { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.island-title { pointer-events: auto; }
 .island-fill { fill: var(--gray); }
 .island.selected { z-index: 3; }
 .island.selected .island-title { visibility: hidden; }

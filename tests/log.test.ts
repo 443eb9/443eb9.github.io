@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { cardLayout, connectorBand, islandLayout, logGrid } from '../src/log-layout.ts'
+import { cardLayout, connectorBand, islandLayouts, logGrid } from '../src/log-layout.ts'
 import { createHalftone } from '../src/halftone.ts'
 
 test('islands use the same world grid and central cell at desktop and mobile widths', () => {
   for (const width of [320, 390, 1188]) {
     const grid = logGrid(width)
-    for (let index = 0; index < 7; index++) {
-      const layout = islandLayout(index, '2026-11-12', `island-${index}`, width, 740)
+    const layouts = islandLayouts(Array.from({ length: 7 }, (_, index) => `island-${index}`), '2026-11-12', width, 740)
+    const occupied: { x: number; y: number; island: number }[] = []
+    for (const [index, layout] of layouts.entries()) {
+      for (const [x, y] of layout.cells) {
+        const cell = { x: Math.round((layout.left - grid.x) / grid.size) + x, y: Math.round((layout.top - grid.y) / grid.size) + y, island: index }
+        assert.ok(occupied.every(other => other.island === index || Math.abs(other.x - cell.x) > 1 || Math.abs(other.y - cell.y) > 1))
+        occupied.push(cell)
+      }
       assert.equal(Math.abs((layout.left - grid.x) % grid.size), 0)
       assert.equal(Math.abs((layout.top - grid.y) % grid.size), 0)
       assert.ok(layout.cells.some(([x, y]) => x === 2 && y === 2))

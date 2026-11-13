@@ -61,19 +61,47 @@ export function logGrid(width: number) {
   return { size: width <= 800 ? 26 : 52, x: width <= 800 ? 4 : 30, y: 17 }
 }
 
-export function islandLayout(index: number, day: string, id: string, width: number, height: number) {
+export function islandLayouts(ids: string[], day: string, width: number, height: number) {
   const grid = logGrid(width)
-  const position = islandPosition(index, day, id)
-  const left = grid.x + Math.round((position.x / 100 * width - grid.size * 2.5 - grid.x) / grid.size) * grid.size
-  const top = grid.y + Math.round((position.y / 100 * height - grid.size * 2.5 - grid.y) / grid.size) * grid.size
-  const cells = islandShape(hash(`${day}:${id}`))
-  const shape = cells.map(([x, y]) => `M${left + x * grid.size},${top + y * grid.size}h${grid.size}v${grid.size}h${-grid.size}Z`).join('')
+  const occupied = new Set<string>()
+  return ids.map((id, index) => {
+    const position = islandPosition(index, day, id)
+    const cells = islandShape(hash(`${day}:${id}`))
+    const column = Math.round((position.x / 100 * width - grid.size * 2.5 - grid.x) / grid.size)
+    const row = Math.round((position.y / 100 * height - grid.size * 2.5 - grid.y) / grid.size)
+    let radius = 0
+    let origin: { x: number; y: number } | undefined
+    while (!origin) {
+      const candidates: { x: number; y: number }[] = []
+      for (let y = -radius; y <= radius; y++) {
+        for (let x = -radius; x <= radius; x++) {
+          if (Math.max(Math.abs(x), Math.abs(y)) === radius) candidates.push({ x: column + x, y: row + y })
+        }
+      }
+      candidates.sort((a, b) => (a.x - column) ** 2 + (a.y - row) ** 2 - (b.x - column) ** 2 - (b.y - row) ** 2)
+      origin = candidates.find(candidate => cells.every(([x, y]) => {
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (occupied.has(`${candidate.x + x + dx},${candidate.y + y + dy}`)) return false
+          }
+        }
+        return true
+      }))
+      radius++
+    }
+    for (const [x, y] of cells) occupied.add(`${origin.x + x},${origin.y + y}`)
+    return createIslandLayout(cells, grid.x + origin.x * grid.size, grid.y + origin.y * grid.size, grid.size)
+  })
+}
+
+function createIslandLayout(cells: [number, number][], left: number, top: number, size: number) {
+  const shape = cells.map(([x, y]) => `M${left + x * size},${top + y * size}h${size}v${size}h${-size}Z`).join('')
   const outlineSize = ISLAND_OUTLINE.gap + ISLAND_OUTLINE.width
   const bounds = {
-    left: left + Math.min(...cells.map(([x]) => x)) * grid.size - outlineSize,
-    top: top + Math.min(...cells.map(([, y]) => y)) * grid.size - outlineSize,
-    right: left + (Math.max(...cells.map(([x]) => x)) + 1) * grid.size + outlineSize,
-    bottom: top + (Math.max(...cells.map(([, y]) => y)) + 1) * grid.size + outlineSize,
+    left: left + Math.min(...cells.map(([x]) => x)) * size - outlineSize,
+    top: top + Math.min(...cells.map(([, y]) => y)) * size - outlineSize,
+    right: left + (Math.max(...cells.map(([x]) => x)) + 1) * size + outlineSize,
+    bottom: top + (Math.max(...cells.map(([, y]) => y)) + 1) * size + outlineSize,
   }
-  return { left, top, cells, shape, bounds, center: { x: left + grid.size * 2.5, y: top + grid.size * 2.5 } }
+  return { left, top, cells, shape, bounds, center: { x: left + size * 2.5, y: top + size * 2.5 } }
 }
