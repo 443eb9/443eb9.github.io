@@ -35,10 +35,7 @@ test('world grid, hover colors, card graphics and regular description text match
       return canvas.getContext('2d')!.getImageData(0, 0, 64, 64).data.some((value, index) => index % 4 === 3 && value > 0)
     })
     expect(painted).toBe(true)
-    const read = () => page.screenshot({ clip: { x: 0, y: 0, width: 64, height: 64 } })
-    const pixels = await read()
     await page.locator('.island-hit').nth(3).hover()
-    expect(await read()).toEqual(pixels)
     await expect(page.locator('.island-fill')).toHaveCSS('fill', 'rgb(211, 211, 211)')
     await expect(page.locator('.log-background')).toHaveCSS('transform', 'none')
     await expect(page.locator('.island-map')).toHaveCSS('transform', 'none')
@@ -51,6 +48,9 @@ test('world grid, hover colors, card graphics and regular description text match
   const card = page.locator('#island-card')
   await expect(card).toBeVisible()
   await expect.poll(async () => inset(await card.evaluate(element => getComputedStyle(element).clipPath)).right).toBe(-10)
+  await expect(card).toHaveCSS('box-shadow', 'none')
+  expect(await page.locator('.directory-marker').evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
+  await expect(page.locator('.terrain-map .contour-field path').first()).toHaveCSS('stroke-width', '2.5px')
   await expect(card.locator('.card-description')).toHaveCSS('font-weight', '400')
   await expect(card.locator('.card-date')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await expect(card.locator('.card-date')).toHaveCSS('border-bottom-color', 'rgb(70, 100, 244)')
@@ -101,6 +101,12 @@ test('connector completes before card reveal, directory opens downward and pagin
   })
   expect(length).toBeGreaterThan(0)
   expect(length).toBeLessThan(1)
+  const endpointDelta = await page.locator('.connector-endpoint').evaluate(element => {
+    const points = getComputedStyle(document.querySelector('.connector-inversion')!).clipPath.match(/-?[\d.]+/g)!.map(Number)
+    const box = element.getBoundingClientRect()
+    return [box.x + box.width / 2 - (points[2] + points[4]) / 2, box.y + box.height / 2 - (points[3] + points[5]) / 2]
+  })
+  for (const delta of endpointDelta) expect(Math.abs(delta)).toBeLessThan(0.1)
   await page.screenshot({ path: info.outputPath('connector-200.png') })
   await page.clock.runFor(300)
   const progress = inset(await card.evaluate(element => getComputedStyle(element).clipPath)).right

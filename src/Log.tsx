@@ -28,6 +28,8 @@ function IslandSelection({ island, layout, world, unit, index, onClose }: { isla
   const [expanded, setExpanded] = useState(false)
   const extension = useMotionValue(reduced ? 1 : 0)
   const bandClip = useTransform(() => connectorBand(layout.center, placement?.end ?? layout.center, extension.get(), unit))
+  const frontX = useTransform(() => (layout.center.x + ((placement?.end.x ?? layout.center.x) - layout.center.x) * extension.get()) * unit)
+  const frontY = useTransform(() => (layout.center.y + ((placement?.end.y ?? layout.center.y) - layout.center.y) * extension.get()) * unit)
   const ready = placement !== null
   const progress = useMotionValue(reduced ? 1 : 0)
   const clipPath = useTransform(progress, value => `inset(${-10 * value}% ${100 - 110 * value}% ${-20 * value}% ${-10 * value}%)`)
@@ -64,6 +66,7 @@ function IslandSelection({ island, layout, world, unit, index, onClose }: { isla
       <defs><filter id={filterId} colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="-1 0 0 0 1.239215686 0 -1 0 0 1.356862745 0 0 -1 0 1.921568627 0 0 0 1 0" /></filter></defs>
       {placement && <rect className="connector-origin" x={layout.center.x - 7} y={layout.center.y - 7} width="14" height="14" />}
     </svg>
+    {placement && <motion.span className="connector-endpoint" style={{ left: frontX, top: frontY }} aria-hidden="true" />}
     <motion.article ref={cardRef} id="island-card" className="island-card" aria-live="polite" style={{ clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
       <span className="card-caption">// Island</span>
       <div className="card-heading"><h1>{island.title}</h1></div>
@@ -71,7 +74,7 @@ function IslandSelection({ island, layout, world, unit, index, onClose }: { isla
       <div className="card-rule"><span className="card-index">#{String(index).padStart(2, '0')}</span></div>
       {island.desc && <p className="card-description">{island.desc}</p>}
       <ul className="tags flex flex-wrap justify-end" aria-label="标签">{island.tags.map(tag => <li className="tag" key={tag}><span>{tag}</span>{[0, 1, 2, 3].map(corner => <i key={corner} className={`tag-corner tag-corner-${corner}`} aria-hidden="true" />)}</li>)}</ul>
-      <span className="corners" aria-hidden="true">{[0, 1, 2, 3].map(corner => <span key={corner} className={`corner corner-${corner}${corner === placement?.corner ? '' : ' filled'}`} />)}</span>
+      <span className="corners" aria-hidden="true">{[0, 1, 2, 3].filter(corner => corner !== placement?.corner).map(corner => <span key={corner} className={`corner corner-${corner} filled`} />)}</span>
       <span className="card-date">{island.date ? <time dateTime={island.date}>{new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Shanghai' }).format(new Date(island.date))}</time> : 'long term project'}</span>
     </motion.article>
   </motion.div>

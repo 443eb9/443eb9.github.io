@@ -89,10 +89,8 @@ export function NoiseField({ kind }: { kind: 'canine' | 'sea' }) {
       pointer = { x: -10000, y: -10000 }
       if (reduced) draw(0)
     }
-    if (kind === 'canine') {
-      scene.addEventListener('pointermove', move)
-      scene.addEventListener('pointerleave', leave)
-    }
+    scene.addEventListener('pointermove', move)
+    scene.addEventListener('pointerleave', leave)
 
     function draw(now: number) {
       if (image && (now - last >= frameInterval || reduced)) {

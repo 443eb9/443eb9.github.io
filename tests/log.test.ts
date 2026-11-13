@@ -67,7 +67,7 @@ test('connector bands meet opposite square corners and widen on diagonals', () =
   assert.equal(connectorBand(start, { x: 200, y: 200 }, 0.5), 'polygon(92px 108px, 142px 158px, 158px 142px, 108px 92px)')
 })
 
-test('sea dots have continuous coverage and preserve their colors under the pointer', () => {
+test('sea dots have continuous size variation and grow near the pointer', () => {
   const image = { width: 128, height: 96, data: new Uint8ClampedArray(128 * 96 * 4) } as ImageData
   const render = createHalftone(image, (_x, _y, time) => Math.sin(time), 'sea', 1)
   const levels = new Set<number>()
@@ -77,7 +77,8 @@ test('sea dots have continuous coverage and preserve their colors under the poin
   }
   assert.ok(levels.size > 16)
   render(0.5, { x: -10000, y: -10000 })
-  const initial = image.data.slice()
+  const alpha = () => image.data.reduce((sum, value, index) => sum + (index % 4 === 3 ? value : 0), 0)
+  const initial = alpha()
   render(0.5, { x: 40, y: 30 })
-  assert.deepEqual(image.data, initial)
+  assert.ok(alpha() > initial)
 })

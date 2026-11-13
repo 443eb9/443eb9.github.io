@@ -120,7 +120,6 @@ button:disabled { cursor: default; }
 .directory-toggle { display: flex; align-items: center; gap: calc(12 * var(--u)); background: var(--blue); color: var(--paper); border: calc(1 * var(--u)) solid var(--blue); padding: calc(4 * var(--u)) calc(12 * var(--u)); font-size: calc(41.667 * var(--u)); line-height: 1; box-shadow: calc(8 * var(--u)) calc(7 * var(--u)) 0 var(--gray); }
 .hamburger { width: calc(40 * var(--u)); height: calc(31 * var(--u)); background: repeating-linear-gradient(180deg, var(--paper) 0 calc(3 * var(--u)), transparent calc(3 * var(--u)) calc(14 * var(--u))); }
 .directory-marker { position: absolute; left: 0; top: calc(68 * var(--u)); width: calc(36 * var(--u)); height: calc(79 * var(--u)); background: var(--blue); pointer-events: none; }
-.directory-marker::before { content: ''; position: absolute; right: calc(-14 * var(--u)); top: calc(14 * var(--u)); width: calc(14 * var(--u)); height: calc(18 * var(--u)); background: inherit; }
 .directory-marker::after { content: ''; position: absolute; left: 0; top: calc(94 * var(--u)); width: calc(18 * var(--u)); height: calc(18 * var(--u)); background: inherit; }
 .directory-list { position: absolute; top: calc(62 * var(--u)); left: 0; width: min(calc(380 * var(--u)), 85vw); max-height: 65svh; overflow-y: auto; background: var(--paper); border: 2px solid var(--blue); box-shadow: 8px 8px 0 var(--blue); padding: 12px; }
 .directory-list button { display: flex; gap: 12px; width: 100%; padding: 8px; text-align: left; font-size: max(16px, calc(18 * var(--u))); }
@@ -133,6 +132,7 @@ button:disabled { cursor: default; }
 .island-map, .map-items, .terrain-map { position: absolute; inset: 0; width: 100%; height: 100%; }
 .terrain-map { pointer-events: none; }
 .terrain-map .contour-field { color: var(--blue); }
+.terrain-map .contour-field path { stroke-width: calc(1.25 * var(--u)); }
 .island { position: absolute; width: calc(5 * var(--land-size)); height: calc(5 * var(--land-size)); transform: translate(-50%, -50%); }
 .island-hit { position: relative; width: 100%; height: 100%; background: transparent; border: 0; }
 .island-fill { fill: var(--gray); }
@@ -150,7 +150,8 @@ button:disabled { cursor: default; }
 .connector { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .connector-inversion { position: absolute; inset: 0; pointer-events: none; }
 .connector-origin { fill: var(--blue); stroke: var(--paper); stroke-width: 2; }
-.island-card { display: flex; flex-direction: column; position: absolute; width: 41.3%; min-height: calc(200 * var(--u)); background: var(--paper); border: calc(1.5 * var(--u)) solid var(--blue); padding: calc(12 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)); pointer-events: auto; box-shadow: calc(10 * var(--u)) calc(8 * var(--u)) 0 #d4d4d455; }
+.connector-endpoint { position: absolute; width: calc(16 * var(--u)); height: calc(16 * var(--u)); transform: translate(-50%, -50%); border: calc(1.5 * var(--u)) solid var(--blue); background: var(--paper); z-index: 6; pointer-events: none; }
+.island-card { display: flex; flex-direction: column; position: absolute; width: 41.3%; min-height: calc(200 * var(--u)); background: var(--paper); border: calc(1.5 * var(--u)) solid var(--blue); padding: calc(12 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)); pointer-events: auto; }
 .card-caption { position: absolute; top: calc(-23 * var(--u)); left: calc(12 * var(--u)); font-size: calc(16.667 * var(--u)); }
 .card-heading { min-height: calc(40 * var(--u)); padding-right: calc(50 * var(--u)); }
 .card-heading h1 { font-size: calc(33.333 * var(--u)); font-weight: 700; line-height: 1.2; margin: 0; overflow-wrap: anywhere; }
