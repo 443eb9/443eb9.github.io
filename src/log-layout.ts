@@ -1,5 +1,20 @@
 import { hash, islandPosition, islandShape } from './terrain.ts'
 
+export function connectorBand(start: { x: number; y: number }, end: { x: number; y: number }, progress: number, unit = 1) {
+  const dx = end.x - start.x
+  const dy = end.y - start.y
+  const half = 8
+  const offset = { x: -Math.sign(dy) * half, y: Math.sign(dx) * half }
+  const front = { x: start.x + dx * progress, y: start.y + dy * progress }
+  const points = [
+    { x: start.x + offset.x, y: start.y + offset.y },
+    { x: front.x + offset.x, y: front.y + offset.y },
+    { x: front.x - offset.x, y: front.y - offset.y },
+    { x: start.x - offset.x, y: start.y - offset.y },
+  ]
+  return `polygon(${points.map(point => `${point.x * unit}px ${point.y * unit}px`).join(', ')})`
+}
+
 export function cardLayout(island: { center: { x: number; y: number }; bounds: { left: number; top: number; right: number; bottom: number } }, card: { width: number; height: number }, world: { width: number; height: number }) {
   const { center, bounds } = island
   const gap = logGrid(world.width).size * 0.6

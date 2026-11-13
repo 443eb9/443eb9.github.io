@@ -61,10 +61,11 @@ test('world grid, hover colors, card graphics and regular description text match
   await expect(page.getByRole('button', { name: '上一页' }).locator('.page-button-label')).toHaveText('<')
   await expect(page.getByRole('button', { name: '下一页' }).locator('.page-button-label')).toHaveText('>')
   const endpoints = await page.locator('.connector').evaluate(element => {
-    const svg = element as SVGSVGElement
-    const [x1, y1, x2, y2] = element.querySelector('path')!.getAttribute('d')!.match(/-?[\d.]+/g)!.map(Number)
-    const start = new DOMPoint(x1, y1).matrixTransform(svg.getScreenCTM()!)
-    const end = new DOMPoint(x2, y2).matrixTransform(svg.getScreenCTM()!)
+    const band = document.querySelector('.connector-inversion')!
+    const points = getComputedStyle(band).clipPath.match(/-?[\d.]+/g)!.map(Number)
+    const bounds = element.getBoundingClientRect()
+    const start = { x: (points[0] + points[6]) / 2 + bounds.x, y: (points[1] + points[7]) / 2 + bounds.y }
+    const end = { x: (points[2] + points[4]) / 2 + bounds.x, y: (points[3] + points[5]) / 2 + bounds.y }
     const island = document.querySelector('.island.selected')!.getBoundingClientRect()
     const card = document.querySelector('#island-card')!.getBoundingClientRect()
     const origin = { x: island.x + island.width / 2, y: island.y + island.height / 2 }
@@ -72,7 +73,7 @@ test('world grid, hover colors, card graphics and regular description text match
     return [start.x - origin.x, start.y - origin.y, end.x - corner.x, end.y - corner.y]
   })
   for (const delta of endpoints) expect(Math.abs(delta)).toBeLessThan(0.1)
-  await expect(page.locator('.connector-band')).toHaveCSS('stroke', 'rgb(246, 246, 246)')
+  await expect(page.locator('.connector-inversion')).toHaveCSS('backdrop-filter', /url\(/)
   await expect(page.locator('.connector-origin')).toHaveCSS('stroke', 'rgb(246, 246, 246)')
   await expect(page.locator('.directory-marker')).toBeVisible()
   await page.screenshot({ path: info.outputPath('log-details.png') })
@@ -90,7 +91,14 @@ test('connector completes before card reveal, directory opens downward and pagin
   const card = page.locator('#island-card')
   await page.clock.runFor(200)
   expect(inset(await card.evaluate(element => getComputedStyle(element).clipPath)).right).toBe(100)
-  const length = await page.locator('.connector-band').evaluate(element => parseFloat(getComputedStyle(element).strokeDasharray))
+  const length = await page.locator('.connector-inversion').evaluate(element => {
+    const points = getComputedStyle(element).clipPath.match(/-?[\d.]+/g)!.map(Number)
+    const start = { x: (points[0] + points[6]) / 2, y: (points[1] + points[7]) / 2 }
+    const front = { x: (points[2] + points[4]) / 2, y: (points[3] + points[5]) / 2 }
+    const card = document.querySelector('#island-card')!.getBoundingClientRect()
+    const end = { x: start.x > card.x + card.width / 2 ? card.right : card.left, y: start.y > card.y + card.height / 2 ? card.bottom : card.top }
+    return Math.hypot(front.x - start.x, front.y - start.y) / Math.hypot(end.x - start.x, end.y - start.y)
+  })
   expect(length).toBeGreaterThan(0)
   expect(length).toBeLessThan(1)
   await page.screenshot({ path: info.outputPath('connector-200.png') })

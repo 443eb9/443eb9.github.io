@@ -148,7 +148,7 @@ button:disabled { cursor: default; }
 .frame-label .corner-2, .frame-label .corner-3 { bottom: calc(-8 * var(--u)); }
 .selection { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 .connector { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.connector-band { stroke: var(--paper); stroke-width: 18; fill: none; }
+.connector-inversion { position: absolute; inset: 0; pointer-events: none; }
 .connector-origin { fill: var(--blue); stroke: var(--paper); stroke-width: 2; }
 .island-card { display: flex; flex-direction: column; position: absolute; width: 41.3%; min-height: calc(200 * var(--u)); background: var(--paper); border: calc(1.5 * var(--u)) solid var(--blue); padding: calc(12 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)); pointer-events: auto; box-shadow: calc(10 * var(--u)) calc(8 * var(--u)) 0 #d4d4d455; }
 .card-caption { position: absolute; top: calc(-23 * var(--u)); left: calc(12 * var(--u)); font-size: calc(16.667 * var(--u)); }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { cardLayout, islandLayout, logGrid } from '../src/log-layout.ts'
+import { cardLayout, connectorBand, islandLayout, logGrid } from '../src/log-layout.ts'
 import { createHalftone } from '../src/halftone.ts'
 
 test('islands use the same world grid and central cell at desktop and mobile widths', () => {
@@ -58,6 +58,13 @@ test('card placement separates island bounds and minimizes overlap in constraine
   const overlap = (left: number, top: number) => Math.max(0, Math.min(left + 256, 260) - Math.max(left, 60)) * Math.max(0, Math.min(top + 400, 490) - Math.max(top, 250))
   const minimum = Math.min(...[16, 48].flatMap(left => [90, 250].map(top => overlap(left, top))))
   assert.equal(overlap(result.left, result.top), minimum)
+})
+
+test('connector bands meet opposite square corners and widen on diagonals', () => {
+  const start = { x: 100, y: 100 }
+  assert.equal(connectorBand(start, { x: 200, y: 200 }, 1), 'polygon(92px 108px, 192px 208px, 208px 192px, 108px 92px)')
+  assert.equal(connectorBand(start, { x: 200, y: 100 }, 1), 'polygon(100px 108px, 200px 108px, 200px 92px, 100px 92px)')
+  assert.equal(connectorBand(start, { x: 200, y: 200 }, 0.5), 'polygon(92px 108px, 142px 158px, 158px 142px, 108px 92px)')
 })
 
 test('sea dots have continuous coverage and preserve their colors under the pointer', () => {

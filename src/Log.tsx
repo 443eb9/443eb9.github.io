@@ -3,7 +3,7 @@ import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, use
 import islands from './generated/islands.json'
 import { Contours, Corners, NoiseField } from './Fields'
 import { hash, PAGE_SIZE } from './terrain'
-import { cardLayout, islandLayout, logGrid } from './log-layout'
+import { cardLayout, connectorBand, islandLayout, logGrid } from './log-layout'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
@@ -22,10 +22,13 @@ function IslandTile({ island, index, layout, unit, selected, onSelect }: { islan
 function IslandSelection({ island, layout, world, unit, index, onClose }: { island: Island; layout: IslandLayout; world: { width: number; height: number }; unit: number; index: number; onClose: () => void }) {
   const reduced = useReducedMotion()
   const cardRef = useRef<HTMLElement>(null)
+  const filterId = `${useId().replaceAll(':', '')}-connector-colors`
   const [cardSize, setCardSize] = useState<{ width: number; height: number } | null>(null)
   const placement = cardSize ? cardLayout(layout, cardSize, world) : null
-  const ray = placement ? `M${layout.center.x},${layout.center.y}L${placement.end.x},${placement.end.y}` : ''
   const [expanded, setExpanded] = useState(false)
+  const extension = useMotionValue(reduced ? 1 : 0)
+  const bandClip = useTransform(() => connectorBand(layout.center, placement?.end ?? layout.center, extension.get(), unit))
+  const ready = placement !== null
   const progress = useMotionValue(reduced ? 1 : 0)
   const clipPath = useTransform(progress, value => `inset(${-10 * value}% ${100 - 110 * value}% ${-20 * value}% ${-10 * value}%)`)
 
@@ -44,13 +47,21 @@ function IslandSelection({ island, layout, world, unit, index, onClose }: { isla
   }, [unit])
 
   useEffect(() => {
+    if (!ready) return
+    const playback = animate(extension, 1, { duration: reduced ? 0 : CARD_TIMING.connector, ease: SWEEP_EASE, onComplete: () => setExpanded(true) })
+    return () => playback.stop()
+  }, [extension, ready, reduced])
+
+  useEffect(() => {
     const playback = animate(progress, expanded || reduced ? 1 : 0, { duration: reduced ? 0 : CARD_TIMING.reveal, ease: SWEEP_EASE })
     return () => playback.stop()
   }, [expanded, reduced, progress])
 
   return <motion.div className="selection" initial={false} exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : 0.12 }}>
+    {placement && <motion.div className="connector-inversion" style={{ clipPath: bandClip, backdropFilter: `url(#${filterId})` }} aria-hidden="true" />}
     <svg className="connector" viewBox={`0 0 ${world.width} ${world.height}`} preserveAspectRatio="none" aria-hidden="true">
-      {placement && <motion.path className="connector-band" d={ray} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: reduced ? 0 : CARD_TIMING.connector, ease: SWEEP_EASE }} onAnimationComplete={() => setExpanded(true)} />}
+      {/* Each channel maps to blue + paper - background, swapping the two scene colors. */}
+      <defs><filter id={filterId} colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="-1 0 0 0 1.239215686 0 -1 0 0 1.356862745 0 0 -1 0 1.921568627 0 0 0 1 0" /></filter></defs>
       {placement && <rect className="connector-origin" x={layout.center.x - 7} y={layout.center.y - 7} width="14" height="14" />}
     </svg>
     <motion.article ref={cardRef} id="island-card" className="island-card" aria-live="polite" style={{ clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
