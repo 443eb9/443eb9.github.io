@@ -1,10 +1,11 @@
-import { type CSSProperties, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { type CSSProperties, type RefObject, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { animate, AnimatePresence, motion, type MotionValue, useDragControls, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, useIsPresent } from 'motion/react'
 import { Contours, Corners, NoiseField } from './Fields'
 import { hash, PAGE_SIZE } from './terrain'
-import { cardLayout, connectorBand, islandLayouts, ISLAND_OUTLINE, logGrid } from './log-layout'
+import { cardLayout, connectorBand, islandLayouts, ISLAND_GRID_WIDTH, ISLAND_OUTLINE, logGrid } from './log-layout'
 import { ISLAND_DURATION, labelBlink } from './log-animation'
 import { islandPath } from './island-content'
+import { VideoIslands } from './VideoIslands'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
@@ -120,7 +121,8 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
   </motion.div>
 }
 
-export function IslandMap({ items, mode }: { items: MapItem[]; mode: 'log' | 'friends' }) {
+export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mode: 'log' | 'friends'; playbackVideo?: RefObject<HTMLVideoElement | null> }) {
+  const hideIslands = playbackVideo !== undefined
   const reduced = useReducedMotion()
   const scene = useRef<HTMLElement>(null)
   const id = useId().replaceAll(':', '')
@@ -221,7 +223,7 @@ export function IslandMap({ items, mode }: { items: MapItem[]; mode: 'log' | 'fr
   return <main ref={scene} className={`log ${mode === 'friends' ? 'neighbourhood ' : ''}scene relative isolate overflow-hidden`} style={{ '--land-size': `${grid.size * unit}px` } as CSSProperties}>
     <div className="log-background"><NoiseField kind="sea" pan={{ panX, panY }} /></div>
     <header className="log-header flex items-start justify-between">
-      {mode === 'log' && <div className="directory">
+      {mode === 'log' && !hideIslands && <div className="directory">
         <button className="directory-toggle" type="button" aria-expanded={menuOpen} aria-controls="directory-list" onClick={() => setMenuOpen(value => !value)}><span className="hamburger" aria-hidden="true" />目录</button>
         <span className="directory-marker" aria-hidden="true" />
         <AnimatePresence>{menuOpen && <motion.nav className="directory-list" id="directory-list" aria-label="岛屿目录" initial={{ clipPath: 'inset(0% 0% 100% 0%)' }} animate={{ clipPath: 'inset(-5% -5% -5% -5%)' }} exit={{ clipPath: 'inset(0% 0% 100% 0%)' }} transition={{ duration: reduced ? 0 : 0.32, ease: SWEEP_EASE }}>
@@ -230,7 +232,8 @@ export function IslandMap({ items, mode }: { items: MapItem[]; mode: 'log' | 'fr
       </div>}
       <a href="/" className="site-link" aria-label="返回首页"><span>Crepuscular<br />Archipelago</span><span className="barcode" aria-hidden="true" /></a>
     </header>
-    <div className="island-map" aria-label={`第 ${page} 页，共 ${visible.length} 个岛屿`} onPointerDown={event => {
+    {playbackVideo && <VideoIslands video={playbackVideo} grid={grid} unit={unit} panX={panX} panY={panY} />}
+    {!hideIslands && <div className="island-map" aria-label={`第 ${page} 页，共 ${visible.length} 个岛屿`} onPointerDown={event => {
       dragged.current = false
       if ((event.target as Element).closest('.selection')) return
       dragControls.start(event)
@@ -249,7 +252,7 @@ export function IslandMap({ items, mode }: { items: MapItem[]; mode: 'log' | 'fr
                 <feComposite in2="ring" operator="in" />
               </filter>
             </>}
-            <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={grid.x} y={grid.y} width={grid.size} height={grid.size}><path d={`M${grid.size},0H0V${grid.size}`} fill="none" stroke="var(--paper)" strokeWidth="3" /></pattern>
+            <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={grid.x} y={grid.y} width={grid.size} height={grid.size}><path d={`M${grid.size},0H0V${grid.size}`} fill="none" stroke="var(--paper)" strokeWidth={ISLAND_GRID_WIDTH} /></pattern>
           </defs>
           <rect className="island-fill" x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} clipPath={`url(#${id}-land)`} />
           <foreignObject x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} clipPath={`url(#${id}-land)`}><Contours variant={hash(day) % 100} frameRate={30} scale={3} /></foreignObject>
@@ -264,8 +267,8 @@ export function IslandMap({ items, mode }: { items: MapItem[]; mode: 'log' | 'fr
         <AnimatePresence initial={false}>{visible.map((island, i) => <IslandTile key={`${island.id}:${layouts[i].center.x}:${layouts[i].center.y}`} island={island} index={i} layout={layouts[i]} unit={unit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}</AnimatePresence>
       </motion.div>
       <AnimatePresence>{active && activeLayout && <IslandSelection key={active.id} island={active} layout={activeLayout} world={world} unit={unit} panX={panX} panY={panY} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
-    </div>
-    {(mode === 'log' || count > 1) && <footer className="log-footer flex items-end justify-between"><span className="page-coordinate">{mode === 'friends' ? 'FRIENDS' : 'ISLANDS'} {String((page - 1) * PAGE_SIZE + 1).padStart(2, '0')}—{String(Math.min(page * PAGE_SIZE, items.length)).padStart(2, '0')} / {items.length}</span>
+    </div>}
+    {!hideIslands && (mode === 'log' || count > 1) && <footer className="log-footer flex items-end justify-between"><span className="page-coordinate">{mode === 'friends' ? 'FRIENDS' : 'ISLANDS'} {String((page - 1) * PAGE_SIZE + 1).padStart(2, '0')}—{String(Math.min(page * PAGE_SIZE, items.length)).padStart(2, '0')} / {items.length}</span>
       <nav className="pagination flex items-center" aria-label="日志分页">
         {pageButton(page - 1, '上一页', '<', page === 1, () => turnAdjacent(-1))}
         {pageNumbers.map(number => pageButton(number, `第 ${number} 页`, String(number)))}

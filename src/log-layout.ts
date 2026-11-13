@@ -1,6 +1,7 @@
 import { hash, islandPosition, islandShape } from './terrain.ts'
 
 export const ISLAND_OUTLINE = { gap: 4, width: 5 } as const
+export const ISLAND_GRID_WIDTH = 3
 
 export function connectorBand(start: { x: number; y: number }, end: { x: number; y: number }, progress: number, unit = 1) {
   const dx = end.x - start.x

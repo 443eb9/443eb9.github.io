@@ -120,6 +120,15 @@ button:disabled { cursor: default; }
 .frame-button:hover::before, .frame-button:focus-visible::before { transform: scaleX(1); }
 .notice { position: absolute; right: 20%; bottom: 18px; font-size: 18px; z-index: 5; }
 
+.log-page { position: relative; }
+.log-playback .log-header { justify-content: flex-end; }
+.video-islands { stroke: var(--paper); }
+.bad-apple-source { position: absolute; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.bad-apple-stage { position: absolute; inset: 0; z-index: 9; display: grid; place-items: center; pointer-events: none; }
+.bad-apple-stage[hidden] { display: none; }
+.bad-apple-play, .bad-apple-exit { border: 1px solid var(--blue); padding: 8px 12px; background: var(--paper); color: var(--blue); font-size: clamp(14px, 1.2vw, 22px); pointer-events: auto; }
+.bad-apple-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.bad-apple-exit { position: absolute; left: 3%; bottom: 3%; }
 .log-background { position: absolute; inset: 0; background: #f0f0f0; }
 .log-background .noise-field { opacity: calc(133 / 255); }
 .log-header { position: absolute; top: 2.55%; left: 2.8%; right: 3%; z-index: 12; pointer-events: none; }
