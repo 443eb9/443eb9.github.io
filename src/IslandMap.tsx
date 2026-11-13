@@ -1,6 +1,7 @@
 import { type CSSProperties, type RefObject, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { animate, AnimatePresence, motion, type MotionValue, useDragControls, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, useIsPresent } from 'motion/react'
-import { Contours, Corners, NoiseField } from './Fields'
+import { Contours, Corners } from './Fields'
+import { MapBackground } from './MapBackground'
 import { hash, PAGE_SIZE } from './terrain'
 import { cardLayout, connectorBand, islandLayouts, ISLAND_GRID_WIDTH, ISLAND_OUTLINE, logGrid } from './log-layout'
 import { ISLAND_DURATION, labelBlink } from './log-animation'
@@ -13,8 +14,9 @@ const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
 export type MapItem = { id: string; title: string; desc: string; tags: string[]; date: string | null; friend?: { avatar: string; link: string; background?: string } }
 type IslandLayout = ReturnType<typeof islandLayouts>[number]
 type TerrainCell = { x: number; y: number; islandIndex: number }
+type SelectionLayout = Pick<IslandLayout, 'center' | 'bounds'>
 
-function TerrainCells({ cells, size, borders = false, selectedIndex = -1 }: { cells: TerrainCell[]; size: number; borders?: boolean; selectedIndex?: number }) {
+function TerrainCells({ cells, size, borders = false, selectedIndex = -1, fade = false }: { cells: TerrainCell[]; size: number; borders?: boolean; selectedIndex?: number; fade?: boolean }) {
   const reduced = useReducedMotion()
   const inset = borders ? 1 : 0
   const width = size - inset * 2
@@ -22,7 +24,7 @@ function TerrainCells({ cells, size, borders = false, selectedIndex = -1 }: { ce
     const x = cell.x + inset
     return <motion.rect key={`${cell.x}:${cell.y}:${size}`} className={borders ? 'land-cell' : 'terrain-cell'} data-cell={`${cell.x}:${cell.y}:${size}`} x={x} y={cell.y + inset} height={width}
       fill={borders ? 'none' : undefined} stroke={borders && cell.islandIndex !== selectedIndex ? 'var(--blue)' : 'none'} strokeWidth={borders ? 0.7 : undefined}
-      initial={reduced ? false : { attrX: x, width: 0 }} animate={{ attrX: x, width }} exit={{ attrX: x + width, width: 0 }} transition={{ duration: reduced ? 0 : ISLAND_DURATION, ease: SWEEP_EASE }} />
+      initial={reduced ? false : fade ? { attrX: x, width, opacity: 0 } : { attrX: x, width: 0 }} animate={{ attrX: x, width, opacity: 1 }} exit={fade ? { opacity: 0 } : { attrX: x + width, width: 0 }} transition={{ duration: reduced ? 0 : ISLAND_DURATION, ease: SWEEP_EASE }} />
   })}</AnimatePresence>
 }
 
@@ -31,17 +33,18 @@ function IslandTile({ island, index, layout, unit, selected, onSelect }: { islan
   const reduced = useReducedMotion()
   const [blink] = useState(() => ({ enter: labelBlink(true), exit: labelBlink(false) }))
   const halfDuration = reduced ? 0 : ISLAND_DURATION / 2
-  return <div className={`island ${selected ? 'selected' : ''}`} inert={!present} aria-hidden={present ? undefined : true} style={{ left: layout.center.x * unit, top: layout.center.y * unit }}>
+  const fade = Boolean(island.friend)
+  return <div data-island-id={island.id} className={`island ${selected ? 'selected' : ''}`} inert={!present} aria-hidden={present ? undefined : true} style={{ left: layout.center.x * unit, top: layout.center.y * unit }}>
     <button className="island-hit" type="button" disabled={!present} onClick={onSelect} aria-expanded={selected} aria-controls="island-card" aria-label={`展开 ${island.title}`}>
       <svg className="island-hit-shape" viewBox={`${layout.left} ${layout.top} ${(layout.center.x - layout.left) * 2} ${(layout.center.y - layout.top) * 2}`} aria-hidden="true"><path d={layout.shape} fill="transparent" pointerEvents="fill" /></svg>
       <motion.span className="island-title frame-label" initial={reduced ? false : { opacity: 0 }}
-        animate={{ opacity: reduced ? 1 : blink.enter.opacity, transition: { duration: halfDuration, delay: halfDuration, times: blink.enter.times, ease: 'linear' } }}
-        exit={{ opacity: reduced ? 0 : blink.exit.opacity, transition: { duration: halfDuration, delay: 0, times: blink.exit.times, ease: 'linear' } }}><span>{island.title}</span><Corners seed={index} /></motion.span>
+        animate={{ opacity: reduced || fade ? 1 : blink.enter.opacity, transition: fade ? { duration: halfDuration } : { duration: halfDuration, delay: halfDuration, times: blink.enter.times, ease: 'linear' } }}
+        exit={{ opacity: reduced || fade ? 0 : blink.exit.opacity, transition: fade ? { duration: halfDuration } : { duration: halfDuration, delay: 0, times: blink.exit.times, ease: 'linear' } }}><span>{island.title}</span><Corners seed={index} /></motion.span>
     </button>
   </div>
 }
 
-function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, index, onClose }: { island: MapItem; layout: IslandLayout; world: { width: number; height: number }; unit: number; panX: MotionValue<number>; panY: MotionValue<number>; index: number; onClose: () => void }) {
+function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, index, onClose }: { island: MapItem; layout: SelectionLayout; world: { width: number; height: number }; unit: number; panX: MotionValue<number>; panY: MotionValue<number>; index: number; onClose: () => void }) {
   const reduced = useReducedMotion()
   const [pan, setPan] = useState(() => ({ x: panX.get(), y: panY.get() }))
   useMotionValueEvent(panX, 'change', x => setPan(previous => ({ ...previous, x })))
@@ -89,11 +92,12 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
   }, [extension, ready, reduced, direct])
 
   useEffect(() => {
-    const playback = animate(progress, (ready && direct) || expanded || reduced ? 1 : 0, { duration: reduced ? 0 : CARD_TIMING.reveal, ease: SWEEP_EASE })
+    if (direct) return
+    const playback = animate(progress, expanded || reduced ? 1 : 0, { duration: reduced ? 0 : CARD_TIMING.reveal, ease: SWEEP_EASE })
     return () => playback.stop()
-  }, [expanded, reduced, progress, ready, direct])
+  }, [expanded, reduced, progress, direct])
 
-  return <motion.div className="selection" initial={false} exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : 0.12 }}>
+  return <motion.div className="selection" initial={direct && !reduced ? { opacity: 0 } : false} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : direct ? 0.35 : 0.12 }}>
     {connection && <motion.div className="connector-inversion" style={{ clipPath: bandClip, backdropFilter: `url(#${filterId})` }} aria-hidden="true" />}
     {connection && <svg className="connector" viewBox={`0 0 ${world.width} ${world.height}`} preserveAspectRatio="none" aria-hidden="true">
       {/* Each channel maps to blue + paper - background, swapping the two scene colors. */}
@@ -101,11 +105,10 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
       <rect className="connector-origin" x={layout.center.x - 7} y={layout.center.y - 7} width="14" height="14" />
     </svg>}
     {connection && <motion.span className="connector-endpoint" style={{ left: frontX, top: frontY }} aria-hidden="true" />}
-    <motion.article ref={cardRef} id="island-card" className={`island-card${island.friend ? ' friend-card' : ''}`} aria-live="polite" style={{ clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
+    <motion.article ref={cardRef} id="island-card" className={`island-card${island.friend ? ' friend-card' : ''}`} aria-live="polite" style={{ clipPath: direct ? 'none' : clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
       <a className="card-open" href={island.friend?.link ?? islandPath(island.id)} target={island.friend ? '_blank' : undefined} rel={island.friend ? 'noreferrer' : undefined} aria-label={`${island.friend ? '访问' : '阅读'} ${island.title}`} />
       <span className="card-caption">{island.friend ? `// Friend #${String(index).padStart(2, '0')}` : '// Island'}</span>
       {island.friend ? <>
-        {island.friend.background && <div className="friend-background" style={{ backgroundImage: `url(${JSON.stringify(island.friend.background)})` }} aria-hidden="true" />}
         <img className="friend-avatar" src={island.friend.avatar} alt={`${island.title} 的头像`} />
         <div className="friend-copy"><h1><span>{island.title}</span></h1><p>{island.desc}</p></div>
       </> : <>
@@ -125,6 +128,8 @@ export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mo
   const hideIslands = playbackVideo !== undefined
   const reduced = useReducedMotion()
   const scene = useRef<HTMLElement>(null)
+  const mapItems = useRef<HTMLDivElement>(null)
+  const [labelSizes, setLabelSizes] = useState<Record<string, { width: number; height: number }>>({})
   const id = useId().replaceAll(':', '')
   const [page, setPage] = useState(1)
   const [windowStart, setWindowStart] = useState(1)
@@ -149,23 +154,59 @@ export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mo
     right: Math.max(...layouts.map(layout => layout.bounds.right)) + grid.size,
     bottom: Math.max(...layouts.map(layout => layout.bounds.bottom)) + grid.size,
   }
-  const horizontalCenter = (world.width - mapBounds.right - mapBounds.left) / 2
-  const verticalCenter = (world.height - mapBounds.bottom - mapBounds.top) / 2
+  if (mode === 'friends') {
+    for (const [index, island] of visible.entries()) {
+      const label = labelSizes[island.id]
+      if (!label) continue
+      const center = layouts[index].center
+      mapBounds.left = Math.min(mapBounds.left, center.x - label.width / 2 - grid.size)
+      mapBounds.right = Math.max(mapBounds.right, center.x + label.width / 2 + grid.size)
+      mapBounds.top = Math.min(mapBounds.top, center.y - label.height / 2 - grid.size)
+      mapBounds.bottom = Math.max(mapBounds.bottom, center.y + label.height / 2 + grid.size)
+    }
+  }
+  const area = mode === 'friends' ? { left: 16 * unit, top: 96 * unit, right: size.width - 16 * unit, bottom: size.height - (count > 1 ? 96 : 16) * unit } : { left: 0, top: 0, right: size.width, bottom: size.height }
+  const mapScale = mode === 'friends' ? Math.min(1, Math.max(1, area.right - area.left) / ((mapBounds.right - mapBounds.left) * unit), Math.max(1, area.bottom - area.top) / ((mapBounds.bottom - mapBounds.top) * unit)) : 1
+  const mapUnit = unit * mapScale
+  const horizontalCenter = (area.left + area.right - (mapBounds.right + mapBounds.left) * mapUnit) / 2
+  const verticalCenter = (area.top + area.bottom - (mapBounds.bottom + mapBounds.top) * mapUnit) / 2
   const dragBounds = {
-    left: Math.min(world.width - mapBounds.right, horizontalCenter) * unit, right: Math.max(-mapBounds.left, horizontalCenter) * unit,
-    top: Math.min(world.height - mapBounds.bottom, verticalCenter) * unit, bottom: Math.max(-mapBounds.top, verticalCenter) * unit,
+    left: Math.min(area.right - mapBounds.right * mapUnit, horizontalCenter), right: Math.max(area.left - mapBounds.left * mapUnit, horizontalCenter),
+    top: Math.min(area.bottom - mapBounds.bottom * mapUnit, verticalCenter), bottom: Math.max(area.top - mapBounds.top * mapUnit, verticalCenter),
   }
   const mapArea = {
-    left: Math.min(mapBounds.left, -dragBounds.right / unit), top: Math.min(mapBounds.top, -dragBounds.bottom / unit),
-    right: Math.max(mapBounds.right, world.width - dragBounds.left / unit), bottom: Math.max(mapBounds.bottom, world.height - dragBounds.top / unit),
+    left: Math.min(mapBounds.left, -dragBounds.right / mapUnit), top: Math.min(mapBounds.top, -dragBounds.bottom / mapUnit),
+    right: Math.max(mapBounds.right, (size.width - dragBounds.left) / mapUnit), bottom: Math.max(mapBounds.bottom, (size.height - dragBounds.top) / mapUnit),
   }
   const activeIndex = visible.findIndex(island => island.id === selected)
   const active = visible[activeIndex]
   const activeLayout = layouts[activeIndex]
+  const selectionLayout = activeLayout && {
+    center: { x: activeLayout.center.x * mapScale, y: activeLayout.center.y * mapScale },
+    bounds: { left: activeLayout.bounds.left * mapScale, top: activeLayout.bounds.top * mapScale, right: activeLayout.bounds.right * mapScale, bottom: activeLayout.bounds.bottom * mapScale },
+  }
   const shownPages = Math.min(narrow ? 3 : 4, count)
   const pageStart = Math.max(1, Math.min(windowStart, count - shownPages + 1))
   const pageNumbers = Array.from({ length: shownPages }, (_, i) => pageStart + i)
   const cells = useMemo(() => layouts.flatMap((layout, islandIndex) => layout.cells.map(([x, y]) => ({ x: layout.left + x * grid.size, y: layout.top + y * grid.size, islandIndex }))), [layouts, grid.size])
+
+  useLayoutEffect(() => {
+    if (mode !== 'friends' || !mapItems.current) return
+    const labels = Array.from(mapItems.current.querySelectorAll<HTMLElement>('.island:not([inert]) .island-title'))
+    const measure = () => {
+      const next: Record<string, { width: number; height: number }> = {}
+      for (const label of labels) {
+        const id = label.closest<HTMLElement>('.island')!.dataset.islandId!
+        const bounds = label.getBoundingClientRect()
+        next[id] = { width: bounds.width / mapUnit, height: bounds.height / mapUnit }
+      }
+      setLabelSizes(previous => Object.keys(next).length === Object.keys(previous).length && Object.keys(next).every(id => previous[id] && Math.abs(previous[id].width - next[id].width) < 0.5 && Math.abs(previous[id].height - next[id].height) < 0.5) ? previous : next)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    for (const label of labels) observer.observe(label)
+    return () => observer.disconnect()
+  }, [mode, visible, mapUnit])
 
   useLayoutEffect(() => {
     const x = Math.max(dragBounds.left, Math.min(0, dragBounds.right))
@@ -221,7 +262,7 @@ export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mo
   }
 
   return <main ref={scene} className={`log ${mode === 'friends' ? 'neighbourhood ' : ''}scene relative isolate overflow-hidden`} style={{ '--land-size': `${grid.size * unit}px` } as CSSProperties}>
-    <div className="log-background"><NoiseField kind="sea" pan={{ panX, panY }} /></div>
+    <MapBackground image={active?.friend?.background} pan={{ panX, panY }} />
     <header className="log-header flex items-start justify-between">
       {mode === 'log' && !hideIslands && <div className="directory">
         <button className="directory-toggle" type="button" aria-expanded={menuOpen} aria-controls="directory-list" onClick={() => setMenuOpen(value => !value)}><span className="hamburger" aria-hidden="true" />目录</button>
@@ -238,10 +279,10 @@ export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mo
       if ((event.target as Element).closest('.selection')) return
       dragControls.start(event)
     }} onClickCapture={event => { if (dragged.current) { event.preventDefault(); event.stopPropagation() } }}>
-      <motion.div className="map-items" drag dragControls={dragControls} dragListener={false} dragConstraints={dragBounds} dragElastic={0} dragMomentum={false} style={{ x: panX, y: panY }} onDragStart={() => { dragged.current = true }}>
-        <svg className="terrain-map" style={{ left: mapArea.left * unit, top: mapArea.top * unit, width: (mapArea.right - mapArea.left) * unit, height: (mapArea.bottom - mapArea.top) * unit }} viewBox={`${mapArea.left} ${mapArea.top} ${mapArea.right - mapArea.left} ${mapArea.bottom - mapArea.top}`} preserveAspectRatio="none" aria-hidden="true">
+      <motion.div ref={mapItems} className="map-items" drag dragControls={dragControls} dragListener={false} dragConstraints={dragBounds} dragElastic={0} dragMomentum={false} style={{ x: panX, y: panY, ...{ '--u': `${mapUnit}px`, '--land-size': `${grid.size * mapUnit}px` } }}  onDragStart={() => { dragged.current = true }}>
+        <svg className="terrain-map" style={{ left: mapArea.left * mapUnit, top: mapArea.top * mapUnit, width: (mapArea.right - mapArea.left) * mapUnit, height: (mapArea.bottom - mapArea.top) * mapUnit }} viewBox={`${mapArea.left} ${mapArea.top} ${mapArea.right - mapArea.left} ${mapArea.bottom - mapArea.top}`} preserveAspectRatio="none" aria-hidden="true">
           <defs>
-            <clipPath id={`${id}-land`}><TerrainCells cells={cells} size={grid.size} /></clipPath>
+            <clipPath id={`${id}-land`}><TerrainCells cells={cells} size={grid.size} fade={mode === 'friends'} /></clipPath>
             {activeLayout && <>
               <clipPath id={`${id}-selected`}><path d={activeLayout.shape} /></clipPath>
               <filter id={`${id}-outline`} filterUnits="userSpaceOnUse" x={activeLayout.bounds.left - 1} y={activeLayout.bounds.top - 1} width={activeLayout.bounds.right - activeLayout.bounds.left + 2} height={activeLayout.bounds.bottom - activeLayout.bounds.top + 2} colorInterpolationFilters="sRGB">
@@ -257,16 +298,16 @@ export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mo
           <rect className="island-fill" x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} clipPath={`url(#${id}-land)`} />
           <foreignObject x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} clipPath={`url(#${id}-land)`}><Contours variant={hash(day) % 100} frameRate={30} scale={3} /></foreignObject>
           <rect className="terrain-grid" x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} fill={`url(#${id}-grid)`} />
-          <TerrainCells cells={cells} size={grid.size} borders selectedIndex={activeIndex} />
+          <TerrainCells cells={cells} size={grid.size} borders selectedIndex={activeIndex} fade={mode === 'friends'} />
           {activeLayout && <>
             <path className="selected-outline" d={activeLayout.shape} fill="var(--blue)" filter={`url(#${id}-outline)`} />
             <path className="selected-land" d={activeLayout.shape} fill="var(--blue)" />
             <rect className="selected-grid" x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} fill={`url(#${id}-grid)`} clipPath={`url(#${id}-selected)`} />
           </>}
         </svg>
-        <AnimatePresence initial={false}>{visible.map((island, i) => <IslandTile key={`${island.id}:${layouts[i].center.x}:${layouts[i].center.y}`} island={island} index={i} layout={layouts[i]} unit={unit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}</AnimatePresence>
+        <AnimatePresence initial={false}>{visible.map((island, i) => <IslandTile key={`${island.id}:${layouts[i].center.x}:${layouts[i].center.y}`} island={island} index={i} layout={layouts[i]} unit={mapUnit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}</AnimatePresence>
       </motion.div>
-      <AnimatePresence>{active && activeLayout && <IslandSelection key={active.id} island={active} layout={activeLayout} world={world} unit={unit} panX={panX} panY={panY} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
+      <AnimatePresence>{active && activeLayout && <IslandSelection key={active.id} island={active} layout={selectionLayout} world={world} unit={unit} panX={panX} panY={panY} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
     </div>}
     {!hideIslands && (mode === 'log' || count > 1) && <footer className="log-footer flex items-end justify-between"><span className="page-coordinate">{mode === 'friends' ? 'FRIENDS' : 'ISLANDS'} {String((page - 1) * PAGE_SIZE + 1).padStart(2, '0')}—{String(Math.min(page * PAGE_SIZE, items.length)).padStart(2, '0')} / {items.length}</span>
       <nav className="pagination flex items-center" aria-label="日志分页">

@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
 import { Contours, Corners, NoiseField } from './Fields'
 import { ScanText } from './ScanText'
 import { GrayBlocks, StripeSquare } from './Decorations'
 
 export function Home() {
-  const [notice, setNotice] = useState('')
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const reduced = useReducedMotion()
@@ -48,11 +46,9 @@ export function Home() {
     </motion.div>
     <motion.div className="scene-layer layer-five" style={{ x: topX, y: topY }}>
       <nav className="home-nav" aria-label="主导航">
-        {[{ label: '日志', href: '/log' }, { label: '元数据', href: '/metadata' }, { label: '邻域', href: '/neighbourhood' }, { label: '开往', href: null }].map(({ label, href }, i) => href
-          ? <a className="frame-button" href={href} key={label}><span className="button-label">{label}</span><span className="button-cover" aria-hidden="true">{label}</span><Corners seed={i} /></a>
-          : <button className="frame-button" type="button" key={label} onClick={() => setNotice(`${label} · 建设中`)}><span className="button-label">{label}</span><span className="button-cover" aria-hidden="true">{label}</span><Corners seed={i} /></button>)}
+        {[{ label: '日志', href: '/log' }, { label: '元数据', href: '/metadata' }, { label: '邻域', href: '/neighbourhood' }, { label: '开往', href: 'https://www.travellings.cn/go.html' }].map(({ label, href }, i) =>
+          <a className="frame-button" href={href} key={label}><span className="button-label">{label}</span><span className="button-cover" aria-hidden="true">{label}</span><Corners seed={i} /></a>)}
       </nav>
     </motion.div>
-    <p className="notice" role="status">{notice}</p>
   </main>
 }

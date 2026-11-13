@@ -49,6 +49,22 @@ test('world grid, hover colors, card graphics and regular description text match
   await expect(card).toBeVisible()
   await expect.poll(async () => inset(await card.evaluate(element => getComputedStyle(element).clipPath)).right).toBe(-10)
   await expect(card).toHaveCSS('box-shadow', 'none')
+  const decoration = await card.locator('.card-rule').evaluate(element => {
+    const rule = element.getBoundingClientRect()
+    const frame = element.closest('.island-card')!
+    const before = getComputedStyle(element, '::before')
+    const width = parseFloat(before.width)
+    const height = parseFloat(before.height)
+    return { width, height, left: parseFloat(before.left),
+      inset: rule.left + parseFloat(before.left) - frame.getBoundingClientRect().left - parseFloat(getComputedStyle(frame).borderLeftWidth),
+      center: parseFloat(before.top) + new DOMMatrixReadOnly(before.transform).m42 + height / 2,
+      lineCenter: rule.height / 2 }
+  })
+  expect(decoration.width).toBe(28)
+  expect(decoration.height).toBe(decoration.width)
+  expect(decoration.left).toBe(0)
+  expect(decoration.inset).toBeGreaterThan(0)
+  expect(decoration.center).toBeCloseTo(decoration.lineCenter, 3)
   await expect(page.locator('.directory-toggle')).toHaveCSS('box-shadow', 'none')
   await expect(page.locator('.log-background')).toHaveCSS('background-color', 'rgb(240, 240, 240)')
   expect(Number(await page.locator('.log-background .noise-field').evaluate(element => getComputedStyle(element).opacity))).toBeCloseTo(133 / 255, 5)
