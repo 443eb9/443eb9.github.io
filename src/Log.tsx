@@ -86,6 +86,7 @@ export function Log() {
   const scene = useRef<HTMLElement>(null)
   const id = useId().replaceAll(':', '')
   const [page, setPage] = useState(1)
+  const [windowStart, setWindowStart] = useState(1)
   const [selected, setSelected] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const dragControls = useDragControls()
@@ -126,7 +127,7 @@ export function Log() {
     bounds: { left: activeLayout.bounds.left + pan.x / unit, top: activeLayout.bounds.top + pan.y / unit, right: activeLayout.bounds.right + pan.x / unit, bottom: activeLayout.bounds.bottom + pan.y / unit },
   }
   const shownPages = Math.min(narrow ? 3 : 4, count)
-  const pageStart = Math.max(1, Math.min(page - 1, count - shownPages + 1))
+  const pageStart = Math.max(1, Math.min(windowStart, count - shownPages + 1))
   const pageNumbers = Array.from({ length: shownPages }, (_, i) => pageStart + i)
   const terrain = layouts.filter((_, index) => index !== activeIndex).map(layout => layout.shape).join('')
 
@@ -164,8 +165,17 @@ export function Log() {
     setSelected(null)
   }
 
-  function pageButton(number: number, label: string, text: string, disabled = false) {
-    return <button className="page-button" type="button" key={label} aria-label={label} aria-current={page === number && text === String(number) ? 'page' : undefined} disabled={disabled} onClick={() => turn(number)}>
+  function turnAdjacent(direction: number) {
+    const next = Math.max(1, Math.min(count, page + direction))
+    let start = pageStart
+    if (next <= start) start = next - 1
+    else if (next >= start + shownPages - 1) start = next - shownPages + 2
+    setWindowStart(Math.max(1, Math.min(start, count - shownPages + 1)))
+    turn(next)
+  }
+
+  function pageButton(number: number, label: string, text: string, disabled = false, onClick = () => turn(number)) {
+    return <button className="page-button" type="button" key={label} aria-label={label} aria-current={page === number && text === String(number) ? 'page' : undefined} disabled={disabled} onClick={onClick}>
       <span className="page-button-label">{text}</span><span className="page-button-cover" aria-hidden="true">{text}</span>
     </button>
   }
@@ -219,9 +229,9 @@ export function Log() {
     </div>
     <footer className="log-footer flex items-end justify-between"><span className="page-coordinate">ISLANDS {String((page - 1) * PAGE_SIZE + 1).padStart(2, '0')}—{String(Math.min(page * PAGE_SIZE, islands.length)).padStart(2, '0')} / {islands.length}</span>
       <nav className="pagination flex items-center" aria-label="日志分页">
-        {pageButton(page - 1, '上一页', '<', page === 1)}
+        {pageButton(page - 1, '上一页', '<', page === 1, () => turnAdjacent(-1))}
         {pageNumbers.map(number => pageButton(number, `第 ${number} 页`, String(number)))}
-        {pageButton(page + 1, '下一页', '>', page === count)}
+        {pageButton(page + 1, '下一页', '>', page === count, () => turnAdjacent(1))}
       </nav>
     </footer>
   </main>

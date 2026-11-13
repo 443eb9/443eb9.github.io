@@ -1,0 +1,34 @@
+import { expect, test } from '@playwright/test'
+
+test('digits preserve the page range and arrows keep selection inside it until a boundary', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.setViewportSize({ width: 1188, height: 666 })
+  await page.goto('/log/')
+  const check = async (current: number, numbers: string[]) => {
+    await expect(page.locator('.pagination .page-button-label')).toHaveText(['<', ...numbers, '>'])
+    await expect(page.locator('.pagination [aria-current] .page-button-label')).toHaveText(String(current))
+    await expect(page.locator('.island-map')).toHaveAttribute('aria-label', new RegExp(`第 ${current} 页`))
+  }
+  const next = page.getByRole('button', { name: '下一页', exact: true })
+  const previous = page.getByRole('button', { name: '上一页', exact: true })
+  await next.click()
+  await check(2, ['1', '2', '3', '4'])
+  await next.click()
+  await check(3, ['1', '2', '3', '4'])
+  await next.click()
+  await check(4, ['2', '3', '4', '5'])
+  await page.getByRole('button', { name: '第 3 页', exact: true }).click()
+  await check(3, ['2', '3', '4', '5'])
+  await previous.click()
+  await check(2, ['1', '2', '3', '4'])
+  await page.getByRole('button', { name: '第 3 页', exact: true }).click()
+  await check(3, ['1', '2', '3', '4'])
+  for (let number = 4; number <= 7; number++) {
+    await next.click()
+    const start = Math.min(number - 2, 4)
+    await check(number, Array.from({ length: 4 }, (_, index) => String(start + index)))
+  }
+  await expect(next).toBeDisabled()
+  await previous.click()
+  await check(6, ['4', '5', '6', '7'])
+})
