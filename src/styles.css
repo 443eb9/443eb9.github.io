@@ -25,6 +25,12 @@ a { color: inherit; text-decoration: none; }
 button:focus-visible, a:focus-visible { outline: 3px dashed var(--blue); outline-offset: 8px; }
 button:disabled { cursor: default; }
 ::selection { background: var(--blue); color: var(--paper); }
+.page-router { min-height: 100svh; isolation: isolate; }
+.page-view { outline: none; }
+.page-incoming, .page-outgoing { position: fixed; inset: 0; overflow: hidden; }
+.page-outgoing { z-index: 1000; }
+.page-incoming { z-index: 1001; }
+.page-wipe { position: fixed; top: 0; bottom: 0; z-index: 1002; background: var(--blue); pointer-events: none; }
 .scene { width: 100%; min-height: 100svh; }
 .home, .log { height: 100svh; min-height: 540px; }
 .home { background: #f0f0f0; }
