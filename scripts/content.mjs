@@ -46,7 +46,7 @@ export async function collectIslands(root) {
     }
   }
   await visit(root)
-  return result.sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '') || a.id.localeCompare(b.id, 'en'))
+  return result.sort((a, b) => Number(b.id.split('/')[0]) - Number(a.id.split('/')[0]) || a.id.localeCompare(b.id, 'en'))
 }
 
 async function main() {
