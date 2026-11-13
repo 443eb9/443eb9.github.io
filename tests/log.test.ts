@@ -81,4 +81,7 @@ test('sea dots have continuous size variation and grow near the pointer', () => 
   const initial = alpha()
   render(0.5, { x: 40, y: 30 })
   assert.ok(alpha() > initial)
+  for (let offset = 0; offset < image.data.length; offset += 4) {
+    if (image.data[offset + 3] > 0) assert.deepEqual(Array.from(image.data.subarray(offset, offset + 3)), [70, 100, 244])
+  }
 })

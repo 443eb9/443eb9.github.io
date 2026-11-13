@@ -1,7 +1,6 @@
 import type { FieldPointer, NoiseSample } from './halftone'
 
 const SEA_BLUE = [70, 100, 244] as const
-const SEA_GRAY = [180, 181, 190] as const
 
 function palette(color: readonly number[]) {
   const bytes = new Uint8Array([...color, 0])
@@ -12,10 +11,7 @@ function palette(color: readonly number[]) {
 export function createSeaHalftone(image: ImageData, noise: NoiseSample, unit: number) {
   const { width, height, data } = image
   const pixels = new Uint32Array(data.buffer, data.byteOffset, data.byteLength / 4)
-  const base = new Uint8ClampedArray(data.length)
-  const basePixels = new Uint32Array(base.buffer)
   const blue = palette(SEA_BLUE)
-  const gray = palette(SEA_GRAY)
   const spacing = 4 * unit
   const reach = 130 * unit
   const sampleStep = 12 * unit
@@ -43,21 +39,16 @@ export function createSeaHalftone(image: ImageData, noise: NoiseSample, unit: nu
       const gx = x / sampleStep
       const gy = y / sampleStep
       dots.push({ x, y, start, end: offsets.length, sample: Math.floor(gy) * columns + Math.floor(gx), tx: gx % 1, ty: gy % 1 })
-      footprint(x + spacing / 2, y + spacing / 2, 0.32 * unit, (index, distance) => {
-        basePixels[index] = gray[Math.round(Math.min(1, 0.32 * unit + 0.5 - distance) * 255)]
-      })
     }
   }
   const indices = Int32Array.from(offsets)
   const lengths = Float32Array.from(distances)
-  const rgba = new Uint8Array(4)
-  const color = new Uint32Array(rgba.buffer)
 
   return (time: number, pointer: FieldPointer) => {
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < columns; x++) values[y * columns + x] = (noise(x * 0.05, y * 0.05, time) + 1) / 2
     }
-    pixels.set(basePixels)
+    pixels.fill(0)
     for (const dot of dots) {
       const { sample, tx, ty } = dot
       const top = values[sample] * (1 - tx) + values[sample + 1] * tx
@@ -68,17 +59,7 @@ export function createSeaHalftone(image: ImageData, noise: NoiseSample, unit: nu
       for (let i = dot.start; i < dot.end; i++) {
         const alpha = Math.round(Math.max(0, Math.min(1, radius + 0.5 - lengths[i])) * 255)
         if (alpha === 0) continue
-        const index = indices[i]
-        const background = base[index * 4 + 3]
-        if (background === 0) pixels[index] = blue[alpha]
-        else {
-          const a = alpha / 255
-          const grayWeight = background / 255 * (1 - a)
-          const combined = a + grayWeight
-          for (let channel = 0; channel < 3; channel++) rgba[channel] = Math.round((SEA_BLUE[channel] * a + SEA_GRAY[channel] * grayWeight) / combined)
-          rgba[3] = Math.round(combined * 255)
-          pixels[index] = color[0]
-        }
+        pixels[indices[i]] = blue[alpha]
       }
     }
   }

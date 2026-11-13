@@ -63,7 +63,7 @@ export function NoiseField({ kind }: { kind: 'canine' | 'sea' }) {
     const context = canvas.getContext('2d')!
     const scene = canvas.closest<HTMLElement>('.scene')!
     const noise = createNoise3D(randomSource(443))
-    const speed = kind === 'canine' ? 0.00018 : 0.00009
+    const speed = 0.00018
     const frameInterval = 1000 / (kind === 'sea' ? 60 : 24)
     let image: ImageData
     let render: ReturnType<typeof createHalftone>
