@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('digits preserve the page range and arrows keep selection inside it until a boundary', async ({ page }) => {
+test('edge digits shift the page range by one and arrows keep their existing behavior', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.setViewportSize({ width: 1188, height: 666 })
   await page.goto('/log/')
@@ -24,6 +24,20 @@ test('digits preserve the page range and arrows keep selection inside it until a
   await check(4, ['2', '3', '4', '5'])
   await page.getByRole('button', { name: '第 3 页', exact: true }).click()
   await check(3, ['2', '3', '4', '5'])
+  await page.getByRole('button', { name: '第 5 页', exact: true }).click()
+  await check(5, ['3', '4', '5', '6'])
+  await page.getByRole('button', { name: '第 3 页', exact: true }).click()
+  await check(3, ['2', '3', '4', '5'])
+  await page.getByRole('button', { name: '第 2 页', exact: true }).click()
+  await check(2, ['1', '2', '3', '4'])
+  await page.getByRole('button', { name: '第 1 页', exact: true }).click()
+  await check(1, ['1', '2', '3', '4'])
+  await page.getByRole('button', { name: '第 3 页', exact: true }).click()
+  await check(3, ['1', '2', '3', '4'])
+  await page.getByRole('button', { name: '第 4 页', exact: true }).click()
+  await check(4, ['2', '3', '4', '5'])
+  await previous.click()
+  await check(3, ['2', '3', '4', '5'])
   await previous.click()
   await check(2, ['1', '2', '3', '4'])
   await page.getByRole('button', { name: '第 3 页', exact: true }).click()
@@ -34,6 +48,8 @@ test('digits preserve the page range and arrows keep selection inside it until a
     await check(number, Array.from({ length: 4 }, (_, index) => String(start + index)))
   }
   await expect(next).toBeDisabled()
+  await page.getByRole('button', { name: '第 7 页', exact: true }).click()
+  await check(7, ['4', '5', '6', '7'])
   await next.hover()
   await expect(next).toHaveCSS('opacity', '1')
   await expect(next.locator('.page-button-label')).toHaveCSS('color', 'rgb(119, 119, 119)')

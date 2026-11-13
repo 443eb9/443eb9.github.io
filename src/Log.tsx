@@ -175,7 +175,13 @@ export function Log() {
     turn(next)
   }
 
-  function pageButton(number: number, label: string, text: string, disabled = false, onClick = () => turn(number)) {
+  function turnNumber(next: number) {
+    if (next === pageStart) setWindowStart(Math.max(1, pageStart - 1))
+    else if (next === pageStart + shownPages - 1) setWindowStart(Math.min(count - shownPages + 1, pageStart + 1))
+    turn(next)
+  }
+
+  function pageButton(number: number, label: string, text: string, disabled = false, onClick = () => turnNumber(number)) {
     return <button className="page-button" type="button" key={label} aria-label={label} aria-current={page === number && text === String(number) ? 'page' : undefined} disabled={disabled} onClick={onClick}>
       <span className="page-button-label">{text}</span><span className="page-button-cover" aria-hidden="true">{text}</span>
     </button>
