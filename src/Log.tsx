@@ -5,7 +5,7 @@ import { IslandMap } from './IslandMap'
 const SECRET = 'apple'
 const VIDEO_VOLUME = 0.12
 
-export function Log() {
+export function Log({ page, setPage }: { page: number; setPage: (page: number) => void }) {
   const root = useRef<HTMLDivElement>(null)
   const video = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -62,7 +62,7 @@ export function Log() {
   }, [])
 
   return <div ref={root} className={`log-page${playing ? ' log-playback' : ''}`}>
-    <IslandMap items={islands} mode="log" playbackVideo={playing ? video : undefined} />
+    <IslandMap items={islands} mode="log" page={page} setPage={setPage} playbackVideo={playing ? video : undefined} />
     <video ref={video} className="bad-apple-source" src="/media/bad-apple.mp4" preload="none" playsInline onEnded={stop} onPlaying={() => setNeedsPlay(false)} onError={() => setNeedsPlay(true)} aria-hidden="true" />
     <div className="bad-apple-stage" hidden={!playing} role="region" aria-label="Bad Apple 像素影像">
       {needsPlay && <button type="button" className="bad-apple-play" onClick={play}>点击播放视频与音频</button>}

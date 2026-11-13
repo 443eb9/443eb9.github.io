@@ -19,6 +19,12 @@ export function parseIsland(source, id) {
   if (data.desc != null && typeof data.desc !== 'string') throw new Error(`${id}: desc must be a string`)
   if (data.encrypted != null && typeof data.encrypted !== 'boolean') throw new Error(`${id}: encrypted must be a boolean`)
 
+  const ty = data.ty ?? 'article'
+  if (!['article', 'note', 'achievement', 'external'].includes(ty)) throw new Error(`${id}: ty must be article, note, achievement or external`)
+  if (ty === 'external') {
+    if (typeof data.ref !== 'string' || !/^https?:\/\//i.test(data.ref) || !URL.canParse(data.ref)) throw new Error(`${id}: external ref must be an HTTP(S) URL`)
+  }
+
   const tags = data.tags == null ? [] : typeof data.tags === 'string' ? [data.tags] : data.tags
   if (!Array.isArray(tags) || tags.some(tag => typeof tag !== 'string')) throw new Error(`${id}: tags must contain strings`)
 
@@ -32,7 +38,7 @@ export function parseIsland(source, id) {
     date = time.toISOString()
   }
 
-  return { id, title: data.title.trim(), desc: data.desc ?? '', tags: [...new Set(tags)], date, encrypted: data.encrypted === true, body: source.replace(/^\uFEFF/, '').slice(match[0].length).trim() }
+  return { id, ty, ref: ty === 'external' ? data.ref : null, title: data.title.trim(), desc: data.desc ?? '', tags: [...new Set(tags)], date, encrypted: data.encrypted === true, body: source.replace(/^\uFEFF/, '').slice(match[0].length).trim() }
 }
 
 export async function collectIslands(root) {

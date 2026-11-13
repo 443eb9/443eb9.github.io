@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import friends from './generated/friends.json'
 import { IslandMap, type MapItem } from './IslandMap'
 
@@ -11,5 +12,7 @@ const items: MapItem[] = friends.map(friend => ({
 }))
 
 export function Neighbourhood() {
-  return <IslandMap items={items} mode="friends" />
+  const [page, setPage] = useState(1)
+
+  return <IslandMap items={items} mode="friends" page={page} setPage={setPage} />
 }

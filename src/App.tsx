@@ -22,9 +22,9 @@ function pageLocation(url: Pick<Location, 'pathname' | 'search' | 'hash'>, key: 
   return { key, path: url.pathname.replace(/\/$/, '') || '/', url: url.pathname + url.search + url.hash }
 }
 
-function Page({ path }: { path: string }) {
+function Page({ path, logPage, setLogPage }: { path: string; logPage: number; setLogPage: (page: number) => void }) {
   if (path === '/') return <Home />
-  if (path === '/log') return <Log />
+  if (path === '/log') return <Log page={logPage} setPage={setLogPage} />
   if (path === '/metadata') return <Metadata />
   if (path === '/neighbourhood') return <Neighbourhood />
 
@@ -42,6 +42,7 @@ export function App() {
   const [requested, setRequested] = useState(current)
   const [entering, setEntering] = useState<PageLocation | null>(null)
   const [oldScroll, setOldScroll] = useState(0)
+  const [logPage, setLogPage] = useState(1)
 
   useEffect(() => {
     const restore = () => setRequested(pageLocation(window.location, ++sequence.current))
@@ -102,7 +103,7 @@ export function App() {
     {[current, ...(entering ? [entering] : [])].map(page => {
       const incoming = page.key === entering?.key
       return <div key={page.key} ref={incoming ? incomingView : undefined} data-page-view className={`page-view${entering ? incoming ? ' page-incoming' : ' page-outgoing' : ''}`} tabIndex={-1} inert={Boolean(entering)} aria-hidden={entering ? true : undefined} style={incoming ? { transform: `translateX(${-100 - WIPE.width}vw)` } : undefined}>
-        <div className="page-content" style={incoming ? { transform: `translateX(${100 + WIPE.width}vw)` } : entering ? { transform: `translateY(${-oldScroll}px)` } : undefined}><Page path={page.path} /></div>
+        <div className="page-content" style={incoming ? { transform: `translateX(${100 + WIPE.width}vw)` } : entering ? { transform: `translateY(${-oldScroll}px)` } : undefined}><Page path={page.path} logPage={logPage} setLogPage={setLogPage} /></div>
       </div>
     })}
     {entering && <div ref={wipeBar} className="page-wipe" style={{ width: `${WIPE.width}vw`, transform: `translateX(${-WIPE.width}vw)` }} aria-hidden="true" />}

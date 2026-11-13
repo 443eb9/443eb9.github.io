@@ -18,13 +18,13 @@ export function connectorBand(start: { x: number; y: number }, end: { x: number;
   return `polygon(${points.map(point => `${point.x * unit}px ${point.y * unit}px`).join(', ')})`
 }
 
-export function cardLayout(island: { center: { x: number; y: number }; bounds: { left: number; top: number; right: number; bottom: number } }, card: { width: number; height: number }, world: { width: number; height: number }) {
+export function cardLayout(island: { center: { x: number; y: number }; bounds: { left: number; top: number; right: number; bottom: number } }, card: { width: number; height: number }, world: { width: number; height: number }, verticalMargin = 90) {
   const { center, bounds } = island
   const gap = logGrid(world.width).size * 0.6
   const xMin = 16
   const xMax = Math.max(xMin, world.width - 16 - card.width)
-  const yMin = 90
-  const yMax = Math.max(yMin, world.height - 90 - card.height)
+  const yMin = verticalMargin
+  const yMax = Math.max(yMin, world.height - verticalMargin - card.height)
   const right = bounds.right + gap
   const leftSide = bounds.left - gap - card.width
   const below = bounds.bottom + gap

@@ -141,9 +141,9 @@ button:disabled { cursor: default; }
 .directory-marker { position: absolute; left: 0; top: calc(68 * var(--u)); width: calc(36 * var(--u)); height: calc(79 * var(--u)); background: var(--blue); pointer-events: none; }
 .directory-marker::after { content: ''; position: absolute; left: 0; top: calc(94 * var(--u)); width: calc(18 * var(--u)); height: calc(18 * var(--u)); background: inherit; }
 .directory-list { position: absolute; top: calc(62 * var(--u)); left: 0; width: min(calc(380 * var(--u)), 85vw); max-height: 65svh; overflow-y: auto; background: var(--paper); border: 2px solid var(--blue); box-shadow: 8px 8px 0 var(--blue); padding: 12px; }
-.directory-list button { display: flex; gap: 12px; width: 100%; padding: 8px; text-align: left; font-size: max(16px, calc(18 * var(--u))); }
-.directory-list button:hover, .directory-list button:focus-visible { background: var(--blue); color: var(--paper); }
-.directory-list button span { opacity: 0.6; }
+.directory-list button, .directory-list a { display: flex; gap: 12px; width: 100%; padding: 8px; text-align: left; font-size: max(16px, calc(18 * var(--u))); }
+.directory-list button:hover, .directory-list button:focus-visible, .directory-list a:hover, .directory-list a:focus-visible { background: var(--blue); color: var(--paper); }
+.directory-list button span, .directory-list a span { opacity: 0.6; }
 .site-link { display: flex; position: relative; border: calc(3 * var(--u)) solid var(--blue); font-size: calc(25 * var(--u)); line-height: 1.25; width: calc(255 * var(--u)); background: var(--paper); padding: calc(3 * var(--u)) calc(8 * var(--u)); box-shadow: calc(25 * var(--u)) 0 0 var(--blue); }
 .barcode { flex: 1; margin-left: calc(8 * var(--u)); background: repeating-linear-gradient(0deg, var(--blue) 0 calc(1 * var(--u)), transparent calc(1 * var(--u)) calc(3 * var(--u)), var(--blue) calc(3 * var(--u)) calc(5 * var(--u)), transparent calc(5 * var(--u)) calc(7 * var(--u))); }
 .island-map, .map-items, .terrain-map { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -153,7 +153,7 @@ button:disabled { cursor: default; }
 .terrain-map .contour-field { color: var(--blue); }
 .terrain-map .contour-field { stroke-width: calc(1.25 * var(--u)); }
 .island { position: absolute; width: calc(5 * var(--land-size)); height: calc(5 * var(--land-size)); transform: translate(-50%, -50%); }
-.island-hit { position: relative; width: 100%; height: 100%; background: transparent; border: 0; pointer-events: none; }
+.island-hit { display: block; position: relative; width: 100%; height: 100%; background: transparent; border: 0; pointer-events: none; }
 .island-hit-shape { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .island-title { pointer-events: auto; }
 .island-fill { fill: var(--gray); }
@@ -173,6 +173,9 @@ button:disabled { cursor: default; }
 .connector-origin { fill: var(--blue); stroke: var(--paper); stroke-width: 2; }
 .connector-endpoint { position: absolute; width: calc(16 * var(--u)); height: calc(16 * var(--u)); transform: translate(-50%, -50%); border: calc(1.5 * var(--u)) solid var(--blue); background: var(--paper); z-index: 6; pointer-events: none; }
 .island-card { display: flex; flex-direction: column; position: absolute; width: 41.3%; min-height: calc(200 * var(--u)); background: var(--paper); border: calc(1.5 * var(--u)) solid var(--blue); padding: calc(12 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)); pointer-events: auto; }
+.note-card { max-height: 100%; }
+.note-card > :not(.card-body) { flex-shrink: 0; }
+.card-body { min-height: 0; overflow: auto; overscroll-behavior: contain; margin-bottom: calc(14 * var(--u)); }
 .card-caption { position: absolute; top: calc(-23 * var(--u)); left: calc(12 * var(--u)); font-size: calc(16.667 * var(--u)); }
 .card-heading { min-height: calc(40 * var(--u)); padding-right: calc(50 * var(--u)); }
 .card-heading h1 { font-size: calc(33.333 * var(--u)); font-weight: 700; line-height: 1.2; margin: 0; overflow-wrap: anywhere; }

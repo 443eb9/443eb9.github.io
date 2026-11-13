@@ -38,7 +38,7 @@ export function Island({ id }: { id: string }) {
   </main>
 }
 
-function IslandBody({ id, body, encrypted }: { id: string; body: string; encrypted: boolean }) {
+export function IslandBody({ id, body, encrypted }: { id: string; body: string; encrypted: boolean }) {
   if (encrypted) return <pre className="island-ciphertext" aria-label="AES 加密内容" data-encryption-context={`island:${id}`}>{body}</pre>
 
   let sectionIndex = 0

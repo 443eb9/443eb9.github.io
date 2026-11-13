@@ -7,11 +7,12 @@ import { cardLayout, connectorBand, islandLayouts, ISLAND_GRID_WIDTH, ISLAND_OUT
 import { ISLAND_DURATION, labelBlink } from './log-animation'
 import { islandPath } from './island-content'
 import { VideoIslands } from './VideoIslands'
+import { IslandBody } from './Island'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
 
-export type MapItem = { id: string; title: string; desc: string; tags: string[]; date: string | null; friend?: { avatar: string; link: string; background?: string } }
+export type MapItem = { id: string; title: string; desc: string; tags: string[]; date: string | null; ty?: string; ref?: string | null; body?: string; encrypted?: boolean; friend?: { avatar: string; link: string; background?: string } }
 type IslandLayout = ReturnType<typeof islandLayouts>[number]
 type TerrainCell = { x: number; y: number; islandIndex: number }
 type SelectionLayout = Pick<IslandLayout, 'center' | 'bounds'>
@@ -34,13 +35,15 @@ function IslandTile({ island, index, layout, unit, selected, onSelect }: { islan
   const [blink] = useState(() => ({ enter: labelBlink(true), exit: labelBlink(false) }))
   const halfDuration = reduced ? 0 : ISLAND_DURATION / 2
   const fade = Boolean(island.friend)
+  const Hit = island.ty === 'achievement' ? 'span' : island.ty === 'external' ? 'a' : 'button'
+  const expandable = Hit === 'button'
   return <div data-island-id={island.id} className={`island ${selected ? 'selected' : ''}`} inert={!present} aria-hidden={present ? undefined : true} style={{ left: layout.center.x * unit, top: layout.center.y * unit }}>
-    <button className="island-hit" type="button" disabled={!present} onClick={onSelect} aria-expanded={selected} aria-controls="island-card" aria-label={`展开 ${island.title}`}>
+    <Hit className="island-hit" {...(expandable ? { type: 'button' as const, disabled: !present, onClick: onSelect, 'aria-expanded': selected, 'aria-controls': 'island-card', 'aria-label': `展开 ${island.title}` } : Hit === 'a' ? { href: island.ref ?? undefined, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `访问 ${island.title}` } : {})}>
       <svg className="island-hit-shape" viewBox={`${layout.left} ${layout.top} ${(layout.center.x - layout.left) * 2} ${(layout.center.y - layout.top) * 2}`} aria-hidden="true"><path d={layout.shape} fill="transparent" pointerEvents="fill" /></svg>
       <motion.span className="island-title frame-label" initial={reduced ? false : { opacity: 0 }}
         animate={{ opacity: reduced || fade ? 1 : blink.enter.opacity, transition: fade ? { duration: halfDuration } : { duration: halfDuration, delay: halfDuration, times: blink.enter.times, ease: 'linear' } }}
         exit={{ opacity: reduced || fade ? 0 : blink.exit.opacity, transition: fade ? { duration: halfDuration } : { duration: halfDuration, delay: 0, times: blink.exit.times, ease: 'linear' } }}><span>{island.title}</span><Corners seed={index} /></motion.span>
-    </button>
+    </Hit>
   </div>
 }
 
@@ -57,7 +60,7 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
   const filterId = `${useId().replaceAll(':', '')}-connector-colors`
   const [cardSize, setCardSize] = useState<{ width: number; height: number } | null>(null)
   const direct = Boolean(island.friend)
-  const connection = cardSize && !direct ? cardLayout(layout, cardSize, world) : null
+  const connection = cardSize && !direct ? cardLayout(layout, cardSize, world, island.ty === 'note' ? 0 : 90) : null
   const placement = cardSize && direct ? {
     left: Math.max(16, Math.min(layout.center.x - cardSize.width / 2, world.width - cardSize.width - 16)),
     top: Math.max(90, Math.min(layout.center.y - cardSize.height / 2, world.height - cardSize.height - 90)),
@@ -105,8 +108,8 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
       <rect className="connector-origin" x={layout.center.x - 7} y={layout.center.y - 7} width="14" height="14" />
     </svg>}
     {connection && <motion.span className="connector-endpoint" style={{ left: frontX, top: frontY }} aria-hidden="true" />}
-    <motion.article ref={cardRef} id="island-card" className={`island-card${island.friend ? ' friend-card' : ''}`} aria-live="polite" style={{ clipPath: direct ? 'none' : clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
-      <a className="card-open" href={island.friend?.link ?? islandPath(island.id)} target={island.friend ? '_blank' : undefined} rel={island.friend ? 'noreferrer' : undefined} aria-label={`${island.friend ? '访问' : '阅读'} ${island.title}`} />
+    <motion.article ref={cardRef} id="island-card" className={`island-card${island.friend ? ' friend-card' : ''}${island.ty === 'note' ? ' note-card' : ''}`} aria-live="polite" style={{ clipPath: direct ? 'none' : clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
+      {island.ty !== 'note' && <a className="card-open" href={island.friend?.link ?? islandPath(island.id)} target={island.friend ? '_blank' : undefined} rel={island.friend ? 'noreferrer' : undefined} aria-label={`${island.friend ? '访问' : '阅读'} ${island.title}`} />}
       <span className="card-caption">{island.friend ? `// Friend #${String(index).padStart(2, '0')}` : '// Island'}</span>
       {island.friend ? <>
         <img className="friend-avatar" src={island.friend.avatar} alt={`${island.title} 的头像`} />
@@ -114,7 +117,7 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
       </> : <>
         <div className="card-heading"><h1>{island.title}</h1></div>
         <div className="card-rule"><span className="card-index">#{String(index).padStart(2, '0')}</span></div>
-        {island.desc && <p className="card-description">{island.desc}</p>}
+        {island.ty === 'note' ? <div className="card-body" role="region" aria-label="岛屿正文" tabIndex={0}><IslandBody id={island.id} body={island.body ?? ''} encrypted={island.encrypted ?? false} /></div> : island.desc && <p className="card-description">{island.desc}</p>}
         <ul className="tags flex flex-wrap justify-end" aria-label="标签">{island.tags.map(tag => <li className="tag" key={tag}><span>{tag}</span>{[0, 1, 2, 3].map(corner => <i key={corner} className={`tag-corner tag-corner-${corner}`} aria-hidden="true" />)}</li>)}</ul>
         <span className="card-date">{island.date ? <time dateTime={island.date}>{new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Shanghai' }).format(new Date(island.date))}</time> : 'long term project'}</span>
       </>}
@@ -124,15 +127,14 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
   </motion.div>
 }
 
-export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mode: 'log' | 'friends'; playbackVideo?: RefObject<HTMLVideoElement | null> }) {
+export function IslandMap({ items, mode, page, setPage, playbackVideo }: { items: MapItem[]; mode: 'log' | 'friends'; page: number; setPage: (page: number) => void; playbackVideo?: RefObject<HTMLVideoElement | null> }) {
   const hideIslands = playbackVideo !== undefined
   const reduced = useReducedMotion()
   const scene = useRef<HTMLElement>(null)
   const mapItems = useRef<HTMLDivElement>(null)
   const [labelSizes, setLabelSizes] = useState<Record<string, { width: number; height: number }>>({})
   const id = useId().replaceAll(':', '')
-  const [page, setPage] = useState(1)
-  const [windowStart, setWindowStart] = useState(1)
+  const [windowStart, setWindowStart] = useState(page)
   const [selected, setSelected] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const dragControls = useDragControls()
@@ -268,7 +270,9 @@ export function IslandMap({ items, mode, playbackVideo }: { items: MapItem[]; mo
         <button className="directory-toggle" type="button" aria-expanded={menuOpen} aria-controls="directory-list" onClick={() => setMenuOpen(value => !value)}><span className="hamburger" aria-hidden="true" />目录</button>
         <span className="directory-marker" aria-hidden="true" />
         <AnimatePresence>{menuOpen && <motion.nav className="directory-list" id="directory-list" aria-label="岛屿目录" initial={{ clipPath: 'inset(0% 0% 100% 0%)' }} animate={{ clipPath: 'inset(-5% -5% -5% -5%)' }} exit={{ clipPath: 'inset(0% 0% 100% 0%)' }} transition={{ duration: reduced ? 0 : 0.32, ease: SWEEP_EASE }}>
-          {items.map((island, i) => <button key={island.id} type="button" onClick={() => { setPage(Math.floor(i / PAGE_SIZE) + 1); setSelected(island.id); setMenuOpen(false) }}><span>{String(i + 1).padStart(2, '0')}</span>{island.title}</button>)}
+          {items.map((island, i) => island.ty === 'external'
+            ? <a key={island.id} href={island.ref ?? undefined} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}><span>{String(i + 1).padStart(2, '0')}</span>{island.title}</a>
+            : <button key={island.id} type="button" onClick={() => { setPage(Math.floor(i / PAGE_SIZE) + 1); setSelected(island.ty === 'achievement' ? null : island.id); setMenuOpen(false) }}><span>{String(i + 1).padStart(2, '0')}</span>{island.title}</button>)}
         </motion.nav>}</AnimatePresence>
       </div>}
       <a href="/" className="site-link" aria-label="返回首页"><span>Crepuscular<br />Archipelago</span><span className="barcode" aria-hidden="true" /></a>
