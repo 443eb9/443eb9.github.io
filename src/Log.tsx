@@ -1,21 +1,41 @@
 import { type CSSProperties, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { animate, AnimatePresence, motion, type MotionValue, useDragControls, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from 'motion/react'
+import { animate, AnimatePresence, motion, type MotionValue, useDragControls, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, useIsPresent } from 'motion/react'
 import islands from './generated/islands.json'
 import { Contours, Corners, NoiseField } from './Fields'
 import { hash, PAGE_SIZE } from './terrain'
 import { cardLayout, connectorBand, islandLayouts, ISLAND_OUTLINE, logGrid } from './log-layout'
+import { ISLAND_DURATION, labelBlink } from './log-animation'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
 
 type Island = { id: string; title: string; desc: string; tags: string[]; date: string | null }
 type IslandLayout = ReturnType<typeof islandLayouts>[number]
+type TerrainCell = { x: number; y: number; islandIndex: number }
+
+function TerrainCells({ cells, size, borders = false, selectedIndex = -1 }: { cells: TerrainCell[]; size: number; borders?: boolean; selectedIndex?: number }) {
+  const reduced = useReducedMotion()
+  const inset = borders ? 1 : 0
+  const width = size - inset * 2
+  return <AnimatePresence initial={false}>{cells.map(cell => {
+    const x = cell.x + inset
+    return <motion.rect key={`${cell.x}:${cell.y}:${size}`} className={borders ? 'land-cell' : 'terrain-cell'} data-cell={`${cell.x}:${cell.y}:${size}`} x={x} y={cell.y + inset} height={width}
+      fill={borders ? 'none' : undefined} stroke={borders && cell.islandIndex !== selectedIndex ? 'var(--blue)' : 'none'} strokeWidth={borders ? 0.7 : undefined}
+      initial={reduced ? false : { attrX: x, width: 0 }} animate={{ attrX: x, width }} exit={{ attrX: x + width, width: 0 }} transition={{ duration: reduced ? 0 : ISLAND_DURATION, ease: SWEEP_EASE }} />
+  })}</AnimatePresence>
+}
 
 function IslandTile({ island, index, layout, unit, selected, onSelect }: { island: Island; index: number; layout: IslandLayout; unit: number; selected: boolean; onSelect: () => void }) {
-  return <div className={`island ${selected ? 'selected' : ''}`} style={{ left: layout.center.x * unit, top: layout.center.y * unit }}>
-    <button className="island-hit" type="button" onClick={onSelect} aria-expanded={selected} aria-controls="island-card" aria-label={`展开 ${island.title}`}>
+  const present = useIsPresent()
+  const reduced = useReducedMotion()
+  const [blink] = useState(() => ({ enter: labelBlink(true), exit: labelBlink(false) }))
+  const halfDuration = reduced ? 0 : ISLAND_DURATION / 2
+  return <div className={`island ${selected ? 'selected' : ''}`} inert={!present} aria-hidden={present ? undefined : true} style={{ left: layout.center.x * unit, top: layout.center.y * unit }}>
+    <button className="island-hit" type="button" disabled={!present} onClick={onSelect} aria-expanded={selected} aria-controls="island-card" aria-label={`展开 ${island.title}`}>
       <svg className="island-hit-shape" viewBox={`${layout.left} ${layout.top} ${(layout.center.x - layout.left) * 2} ${(layout.center.y - layout.top) * 2}`} aria-hidden="true"><path d={layout.shape} fill="transparent" pointerEvents="fill" /></svg>
-      <span className="island-title frame-label"><span>{island.title}</span><Corners seed={index} /></span>
+      <motion.span className="island-title frame-label" initial={reduced ? false : { opacity: 0 }}
+        animate={{ opacity: reduced ? 1 : blink.enter.opacity, transition: { duration: halfDuration, delay: halfDuration, times: blink.enter.times, ease: 'linear' } }}
+        exit={{ opacity: reduced ? 0 : blink.exit.opacity, transition: { duration: halfDuration, delay: 0, times: blink.exit.times, ease: 'linear' } }}><span>{island.title}</span><Corners seed={index} /></motion.span>
     </button>
   </div>
 }
@@ -131,7 +151,7 @@ export function Log() {
   const shownPages = Math.min(narrow ? 3 : 4, count)
   const pageStart = Math.max(1, Math.min(windowStart, count - shownPages + 1))
   const pageNumbers = Array.from({ length: shownPages }, (_, i) => pageStart + i)
-  const terrain = layouts.filter((_, index) => index !== activeIndex).map(layout => layout.shape).join('')
+  const cells = useMemo(() => layouts.flatMap((layout, islandIndex) => layout.cells.map(([x, y]) => ({ x: layout.left + x * grid.size, y: layout.top + y * grid.size, islandIndex }))), [layouts, grid.size])
 
   useLayoutEffect(() => {
     const x = Math.max(dragBounds.left, Math.min(0, dragBounds.right))
@@ -207,7 +227,7 @@ export function Log() {
       <motion.div className="map-items" drag dragControls={dragControls} dragListener={false} dragConstraints={dragBounds} dragElastic={0} dragMomentum={false} style={{ x: panX, y: panY }} onDragStart={() => { dragged.current = true }}>
         <svg className="terrain-map" style={{ left: mapArea.left * unit, top: mapArea.top * unit, width: (mapArea.right - mapArea.left) * unit, height: (mapArea.bottom - mapArea.top) * unit }} viewBox={`${mapArea.left} ${mapArea.top} ${mapArea.right - mapArea.left} ${mapArea.bottom - mapArea.top}`} preserveAspectRatio="none" aria-hidden="true">
           <defs>
-            <clipPath id={`${id}-land`}><path d={terrain} /></clipPath>
+            <clipPath id={`${id}-land`}><TerrainCells cells={cells} size={grid.size} /></clipPath>
             {activeLayout && <>
               <clipPath id={`${id}-selected`}><path d={activeLayout.shape} /></clipPath>
               <filter id={`${id}-outline`} filterUnits="userSpaceOnUse" x={activeLayout.bounds.left - 1} y={activeLayout.bounds.top - 1} width={activeLayout.bounds.right - activeLayout.bounds.left + 2} height={activeLayout.bounds.bottom - activeLayout.bounds.top + 2} colorInterpolationFilters="sRGB">
@@ -220,17 +240,17 @@ export function Log() {
             </>}
             <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={grid.x} y={grid.y} width={grid.size} height={grid.size}><path d={`M${grid.size},0H0V${grid.size}`} fill="none" stroke="var(--paper)" strokeWidth="3" /></pattern>
           </defs>
-          <path className="island-fill" d={terrain} />
+          <rect className="island-fill" x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} clipPath={`url(#${id}-land)`} />
           <foreignObject x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} clipPath={`url(#${id}-land)`}><Contours variant={hash(day) % 100} frameRate={30} scale={3} /></foreignObject>
           <rect className="terrain-grid" x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} fill={`url(#${id}-grid)`} />
-          {layouts.flatMap((layout, index) => index === activeIndex ? [] : layout.cells.map(([x, y]) => <rect key={`${index}:${x}:${y}`} className="land-cell" x={layout.left + x * grid.size + 1} y={layout.top + y * grid.size + 1} width={grid.size - 2} height={grid.size - 2} fill="none" stroke="var(--blue)" strokeWidth="0.7" />))}
+          <TerrainCells cells={cells} size={grid.size} borders selectedIndex={activeIndex} />
           {activeLayout && <>
             <path className="selected-outline" d={activeLayout.shape} fill="var(--blue)" filter={`url(#${id}-outline)`} />
             <path className="selected-land" d={activeLayout.shape} fill="var(--blue)" />
             <rect className="selected-grid" x={mapArea.left} y={mapArea.top} width={mapArea.right - mapArea.left} height={mapArea.bottom - mapArea.top} fill={`url(#${id}-grid)`} clipPath={`url(#${id}-selected)`} />
           </>}
         </svg>
-        {visible.map((island, i) => <IslandTile key={island.id} island={island} index={i} layout={layouts[i]} unit={unit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}
+        <AnimatePresence initial={false}>{visible.map((island, i) => <IslandTile key={`${island.id}:${layouts[i].center.x}:${layouts[i].center.y}`} island={island} index={i} layout={layouts[i]} unit={unit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}</AnimatePresence>
       </motion.div>
       <AnimatePresence>{active && activeLayout && <IslandSelection key={active.id} island={active} layout={activeLayout} world={world} unit={unit} panX={panX} panY={panY} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
     </div>

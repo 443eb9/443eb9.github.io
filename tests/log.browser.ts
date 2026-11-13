@@ -20,7 +20,7 @@ test('world grid, hover colors, card graphics and regular description text match
       return Array.from(element.querySelectorAll('.land-cell'), cell => [
         (Number(cell.getAttribute('x')) - 1 - x) / size,
         (Number(cell.getAttribute('y')) - 1 - y) / size,
-        Number(cell.getAttribute('width')) + 2 - size,
+        parseFloat(cell.getAttribute('width')!) + 2 - size,
       ])
     })
     expect(grid.length).toBeGreaterThan(20)
