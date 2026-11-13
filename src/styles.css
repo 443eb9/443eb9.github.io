@@ -180,7 +180,7 @@ button:disabled { cursor: default; }
 .log-footer { position: absolute; bottom: 3%; left: 3%; right: 2%; z-index: 8; gap: 20px; pointer-events: none; }
 .page-coordinate { font-size: calc(12 * var(--u)); background: var(--paper); padding: 2px 4px; }
 .pagination { gap: calc(24 * var(--u)); pointer-events: auto; }
-.page-button { position: relative; isolation: isolate; width: calc(52 * var(--u)); height: calc(52 * var(--u)); border: calc(1.5 * var(--u)) solid var(--blue); background: var(--paper); box-shadow: calc(5 * var(--u)) calc(5 * var(--u)) 0 var(--blue); font-size: calc(36 * var(--u)); line-height: 1; }
+.page-button { position: relative; isolation: isolate; width: calc(52 * var(--u)); height: calc(52 * var(--u)); border: calc(1.5 * var(--u)) solid var(--blue); background: var(--paper); box-shadow: calc(5 * var(--u)) calc(5 * var(--u)) 0 currentColor; font-size: calc(36 * var(--u)); line-height: 1; }
 .page-button::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--blue); }
 .page-button-cover { position: absolute; inset: 0; display: grid; place-items: center; color: var(--paper); }
 .page-button::before, .page-button-cover { clip-path: inset(100% 0 0 0); transition: clip-path 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -232,7 +232,7 @@ button:disabled { cursor: default; }
   .tag { min-height: 30px; font-size: 12px; }
   .log-footer { left: 5%; right: 5%; bottom: 3%; flex-direction: column; align-items: flex-end; gap: 12px; }
   .pagination { gap: 12px; }
-  .page-button { width: 44px; height: 44px; font-size: 24px; box-shadow: 4px 4px 0 var(--blue); }
+  .page-button { width: 44px; height: 44px; font-size: 24px; box-shadow: 4px 4px 0 currentColor; }
   .page-coordinate { font-size: 12px; }
 }
 
