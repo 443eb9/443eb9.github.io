@@ -10,10 +10,10 @@ test('navigation reveals the new page left of the blue bar and supports history 
   await page.evaluate(() => { document.body.dataset.navigationProbe = 'same-document'; return document.fonts.ready })
   await page.clock.runFor(100)
   await page.getByRole('link', { name: '日志', exact: true }).click()
-  const seek = (time: number) => page.locator('.page-incoming, .page-wipe').evaluateAll((elements, time) => {
+  const seek = (time: number) => page.locator('.page-incoming, .page-incoming > .page-content, .page-wipe').evaluateAll((elements, time) => {
     for (const element of elements) for (const animation of element.getAnimations()) { animation.pause(); animation.currentTime = time }
   }, time)
-  const finish = () => page.locator('.page-incoming, .page-wipe').evaluateAll(elements => {
+  const finish = () => page.locator('.page-incoming, .page-incoming > .page-content, .page-wipe').evaluateAll(elements => {
     for (const element of elements) for (const animation of element.getAnimations()) animation.finish()
   })
   await seek(100)
@@ -25,8 +25,9 @@ test('navigation reveals the new page left of the blue bar and supports history 
   const wipe = await page.evaluate(() => {
     const band = document.querySelector('.page-wipe')!.getBoundingClientRect()
     const incoming = document.querySelector('.page-incoming')!
-    const inset = parseFloat(getComputedStyle(incoming).clipPath.split(' ')[1])
-    return { left: band.left, width: band.width, height: band.height, inset, inert: incoming.hasAttribute('inert') }
+    const edge = incoming.getBoundingClientRect().right
+    const contentLeft = incoming.firstElementChild!.getBoundingClientRect().left
+    return { left: band.left, width: band.width, height: band.height, edge, contentLeft, inert: incoming.hasAttribute('inert') }
   })
   expect(wipe.left).toBeGreaterThan(0)
   expect(wipe.left).toBeLessThan(1188)
@@ -34,7 +35,8 @@ test('navigation reveals the new page left of the blue bar and supports history 
   expect(wipe.width).toBeCloseTo(1188 * 0.08 * (1 + 9 * progress ** 2), 1)
   expect(wipe.width).toBeGreaterThan(earlyWidth)
   expect(wipe.height).toBe(666)
-  expect(1188 * (1 - wipe.inset / 100)).toBeCloseTo(wipe.left, 1)
+  expect(wipe.edge).toBeCloseTo(wipe.left, 1)
+  expect(wipe.contentLeft).toBeCloseTo(0, 1)
   expect(wipe.inert).toBe(true)
   await page.screenshot({ path: info.outputPath('navigation-middle.png') })
   await seek(620)

@@ -49,17 +49,18 @@ export function App() {
   useLayoutEffect(() => {
     if (!entering) return
     const options: KeyframeAnimationOptions = { duration: reduced ? 0 : WIPE.duration * 1000, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'both' }
-    const reveal = incomingView.current!.animate([{ clipPath: `inset(0 ${(100 + WIPE.width)}% 0 0)` }, { clipPath: 'inset(0 0% 0 0)' }], options)
+    const reveal = incomingView.current!.animate([{ transform: `translateX(${-100 - WIPE.width}vw)` }, { transform: 'translateX(0vw)' }], options)
+    const content = incomingView.current!.firstElementChild!.animate([{ transform: `translateX(${100 + WIPE.width}vw)` }, { transform: 'translateX(0vw)' }], options)
     const band = wipeBar.current!.animate(Array.from({ length: WIPE.steps + 1 }, (_, step) => {
       const progress = step / WIPE.steps
       return { offset: progress, transform: `translateX(${-WIPE.width + (100 + WIPE.width) * progress}vw) scaleX(${1 + (WIPE.widthScale - 1) * progress ** 2})` }
     }), options)
-    reveal.startTime = band.startTime = document.timeline.currentTime
+    reveal.startTime = content.startTime = band.startTime = document.timeline.currentTime
     reveal.onfinish = () => {
       setCurrent(entering)
       setEntering(null)
     }
-    return () => { reveal.onfinish = null; reveal.cancel(); band.cancel() }
+    return () => { reveal.onfinish = null; reveal.cancel(); content.cancel(); band.cancel() }
   }, [entering, reduced])
 
   useEffect(() => {
@@ -87,8 +88,8 @@ export function App() {
   return <div ref={root} className="page-router" onClick={navigate}>
     {[current, ...(entering ? [entering] : [])].map(page => {
       const incoming = page.key === entering?.key
-      return <div key={page.key} ref={incoming ? incomingView : undefined} data-page-view className={`page-view${entering ? incoming ? ' page-incoming' : ' page-outgoing' : ''}`} tabIndex={-1} inert={Boolean(entering)} aria-hidden={entering ? true : undefined} style={incoming ? { clipPath: `inset(0 ${100 + WIPE.width}% 0 0)` } : undefined}>
-        <div className="page-content" style={entering && !incoming ? { transform: `translateY(${-oldScroll}px)` } : undefined}><Page path={page.path} /></div>
+      return <div key={page.key} ref={incoming ? incomingView : undefined} data-page-view className={`page-view${entering ? incoming ? ' page-incoming' : ' page-outgoing' : ''}`} tabIndex={-1} inert={Boolean(entering)} aria-hidden={entering ? true : undefined} style={incoming ? { transform: `translateX(${-100 - WIPE.width}vw)` } : undefined}>
+        <div className="page-content" style={incoming ? { transform: `translateX(${100 + WIPE.width}vw)` } : entering ? { transform: `translateY(${-oldScroll}px)` } : undefined}><Page path={page.path} /></div>
       </div>
     })}
     {entering && <div ref={wipeBar} className="page-wipe" style={{ width: `${WIPE.width}vw`, transform: `translateX(${-WIPE.width}vw)` }} aria-hidden="true" />}

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { useReducedMotion } from 'motion/react'
+import { type MotionValue, useReducedMotion } from 'motion/react'
 import { createNoise3D } from 'simplex-noise'
 import { randomSource } from './terrain'
 import { createHalftone } from './halftone'
@@ -16,7 +16,10 @@ export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { varian
     const worker = new Worker(new URL('./contours.worker.ts', import.meta.url), { type: 'module' })
     let pending = false
     let first = true
-    let resized = true
+    let dirty = true
+    const svg = paths.current!.ownerSVGElement!
+    const scene = svg.closest<HTMLElement>('.scene')!
+    let pointer: { x: number; y: number } | null = null
     const frameInterval = 1000 / frameRate
     let frame = 0
     let last = -frameInterval
@@ -24,22 +27,47 @@ export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { varian
     const observer = new ResizeObserver(([entry]) => {
       aspect = entry.contentRect.width / entry.contentRect.height
       last = -frameInterval
-      resized = true
+      dirty = true
       if (reduced) request(0)
     })
-    observer.observe(paths.current!.ownerSVGElement!)
+    observer.observe(svg)
     worker.onmessage = ({ data }: MessageEvent<ContourResponse>) => {
       data.paths.forEach((path, index) => paths.current!.children[index].setAttribute('d', path))
       pending = false
-      if (reduced && resized) request(0)
+      if (reduced && dirty) request(0)
     }
+
+    function move(event: PointerEvent) {
+      pointer = { x: event.clientX, y: event.clientY }
+      dirty = true
+      if (reduced) request(0)
+    }
+    function leave() {
+      pointer = null
+      dirty = true
+      if (reduced) request(0)
+    }
+    scene.addEventListener('pointermove', move)
+    scene.addEventListener('pointerleave', leave)
 
     function request(now: number) {
       if (pending) return
       pending = true
-      resized = false
+      dirty = false
       last = now - (now - last) % frameInterval
-      worker.postMessage({ aspect, time: reduced ? 0 : now * 0.00002, settings: first ? { variant, scale } : undefined } satisfies ContourRequest)
+      const bounds = svg.getBoundingClientRect()
+      const radius = 130 * Math.max(0.75, scene.clientWidth / 1188)
+      worker.postMessage({
+        aspect,
+        time: reduced ? 0 : now * 0.00002,
+        pointer: pointer && bounds.width > 0 && bounds.height > 0 ? {
+          x: (pointer.x - bounds.left) / bounds.width * 64,
+          y: (pointer.y - bounds.top) / bounds.height * 40,
+          radiusX: radius / bounds.width * 64,
+          radiusY: radius / bounds.height * 40,
+        } : null,
+        settings: first ? { variant, scale } : undefined,
+      } satisfies ContourRequest)
       first = false
     }
     function draw(now: number) {
@@ -47,7 +75,13 @@ export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { varian
       if (!reduced) frame = requestAnimationFrame(draw)
     }
     frame = requestAnimationFrame(draw)
-    return () => { observer.disconnect(); cancelAnimationFrame(frame); worker.terminate() }
+    return () => {
+      observer.disconnect()
+      cancelAnimationFrame(frame)
+      scene.removeEventListener('pointermove', move)
+      scene.removeEventListener('pointerleave', leave)
+      worker.terminate()
+    }
   }, [variant, frameRate, scale, reduced])
 
   return <svg className="contour-field" viewBox="0 0 64 40" preserveAspectRatio="none" aria-hidden="true">
@@ -55,11 +89,13 @@ export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { varian
   </svg>
 }
 
-export function NoiseField({ kind }: { kind: 'canine' | 'sea' }) {
-  return kind === 'sea' ? <SeaField /> : <CanineField />
+type FieldPan = { panX: MotionValue<number>; panY: MotionValue<number> }
+
+export function NoiseField({ kind, pan }: { kind: 'canine' | 'sea'; pan?: FieldPan }) {
+  return kind === 'sea' ? <SeaField pan={pan} /> : <CanineField />
 }
 
-function SeaField() {
+function SeaField({ pan }: { pan?: FieldPan }) {
   const host = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
 
@@ -72,30 +108,37 @@ function SeaField() {
     let ready = false
     let frame = 0
     let pointer = { x: -10000, y: -10000 }
+    function paint(time: number) {
+      if (ready) renderer.draw(time, pointer, { x: pan?.panX.get() ?? 0, y: pan?.panY.get() ?? 0 })
+    }
     const observer = new ResizeObserver(([entry]) => {
       renderer.resize(entry.contentRect.width, entry.contentRect.height, Math.max(0.75, scene.clientWidth / 1188))
       ready = true
-      if (reduced) renderer.draw(0, pointer)
+      if (reduced) paint(0)
     })
     observer.observe(host.current!)
 
     function move(event: PointerEvent) {
       const bounds = canvas.getBoundingClientRect()
       pointer = { x: event.clientX - bounds.left, y: event.clientY - bounds.top }
-      if (reduced) renderer.draw(0, pointer)
+      if (reduced) paint(0)
     }
     function leave() {
       pointer = { x: -10000, y: -10000 }
-      if (reduced) renderer.draw(0, pointer)
+      if (reduced) paint(0)
     }
     function draw(now: number) {
-      if (ready) renderer.draw(now * NOISE_SPEED, pointer)
+      paint(now * NOISE_SPEED)
       frame = requestAnimationFrame(draw)
     }
     scene.addEventListener('pointermove', move)
     scene.addEventListener('pointerleave', leave)
+    const unsubscribeX = pan?.panX.on('change', () => { if (reduced) paint(0) })
+    const unsubscribeY = pan?.panY.on('change', () => { if (reduced) paint(0) })
     if (!reduced) frame = requestAnimationFrame(draw)
     return () => {
+      unsubscribeX?.()
+      unsubscribeY?.()
       observer.disconnect()
       cancelAnimationFrame(frame)
       scene.removeEventListener('pointermove', move)
@@ -103,7 +146,7 @@ function SeaField() {
       renderer.dispose()
       canvas.remove()
     }
-  }, [reduced])
+  }, [reduced, pan?.panX, pan?.panY])
 
   return <div ref={host} className="sea-field" aria-hidden="true" />
 }
