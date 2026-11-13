@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { islandLayout, logGrid } from '../src/log-layout.ts'
+import { cardLayout, islandLayout, logGrid } from '../src/log-layout.ts'
 import { createHalftone } from '../src/halftone.ts'
 
 test('islands use the same world grid and central cell at desktop and mobile widths', () => {
@@ -13,6 +13,35 @@ test('islands use the same world grid and central cell at desktop and mobile wid
       assert.ok(layout.cells.some(([x, y]) => x === 2 && y === 2))
       assert.equal(layout.center.x, layout.left + grid.size * 2.5)
       assert.equal(layout.center.y, layout.top + grid.size * 2.5)
+    }
+  }
+})
+
+test('cards open toward the opposite quadrant and connect to the facing corner', () => {
+  const world = { width: 1188, height: 666 }
+  const card = { width: 420, height: 200 }
+  for (const [x, y, corner] of [[200, 500, 2], [1000, 150, 1], [200, 150, 0], [1000, 500, 3]]) {
+    const result = cardLayout({ x, y }, card, world)
+    assert.equal(result.corner, corner)
+    assert.ok(result.left >= 16 && result.left + card.width <= world.width - 16)
+    assert.ok(result.top >= 90 && result.top + card.height <= world.height - 90)
+    assert.equal(result.end.x, result.left + (corner % 2 ? card.width : 0))
+    assert.equal(result.end.y, result.top + (corner >= 2 ? card.height : 0))
+    assert.ok(x < world.width / 2 ? result.left > x : result.left + card.width < x)
+    assert.ok(y < world.height / 2 ? result.top > y : result.top + card.height < y)
+  }
+})
+
+test('cards stay inside mobile bounds with measured sizes near viewport edges', () => {
+  for (const width of [320, 390]) {
+    const world = { width, height: 740 }
+    for (const center of [{ x: 10, y: 10 }, { x: width - 10, y: 730 }]) {
+      for (const height of [180, 400]) {
+        const card = { width: width * 0.8, height }
+        const result = cardLayout(center, card, world)
+        assert.ok(result.left >= 16 && result.left + card.width <= width - 16)
+        assert.ok(result.top >= 90 && result.top + height <= 650)
+      }
     }
   }
 })

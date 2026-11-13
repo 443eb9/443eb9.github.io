@@ -3,7 +3,7 @@ import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, use
 import islands from './generated/islands.json'
 import { Contours, Corners, NoiseField } from './Fields'
 import { hash, PAGE_SIZE } from './terrain'
-import { islandLayout, logGrid } from './log-layout'
+import { cardLayout, islandLayout, logGrid } from './log-layout'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
@@ -19,11 +19,29 @@ function IslandTile({ island, index, layout, unit, selected, onSelect }: { islan
   </div>
 }
 
-function IslandSelection({ island, layout, world, ray, index, onClose }: { island: Island; layout: IslandLayout; world: { width: number; height: number }; ray: string; index: number; onClose: () => void }) {
+function IslandSelection({ island, layout, world, unit, index, onClose }: { island: Island; layout: IslandLayout; world: { width: number; height: number }; unit: number; index: number; onClose: () => void }) {
   const reduced = useReducedMotion()
+  const cardRef = useRef<HTMLElement>(null)
+  const [cardSize, setCardSize] = useState<{ width: number; height: number } | null>(null)
+  const placement = cardSize ? cardLayout(layout.center, cardSize, world) : null
+  const ray = placement ? `M${layout.center.x},${layout.center.y}L${placement.end.x},${placement.end.y}` : ''
   const [expanded, setExpanded] = useState(false)
   const progress = useMotionValue(reduced ? 1 : 0)
   const clipPath = useTransform(progress, value => `inset(${-10 * value}% ${100 - 110 * value}% ${-20 * value}% ${-10 * value}%)`)
+
+  useLayoutEffect(() => {
+    const element = cardRef.current!
+    const measure = () => {
+      const bounds = element.getBoundingClientRect()
+      const width = bounds.width / unit
+      const height = bounds.height / unit
+      setCardSize(previous => previous?.width === width && previous.height === height ? previous : { width, height })
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [unit])
 
   useEffect(() => {
     const playback = animate(progress, expanded || reduced ? 1 : 0, { duration: reduced ? 0 : CARD_TIMING.reveal, ease: SWEEP_EASE })
@@ -32,17 +50,17 @@ function IslandSelection({ island, layout, world, ray, index, onClose }: { islan
 
   return <motion.div className="selection" initial={false} exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : 0.12 }}>
     <svg className="connector" viewBox={`0 0 ${world.width} ${world.height}`} preserveAspectRatio="none" aria-hidden="true">
-      <motion.path className="connector-band" d={ray} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: reduced ? 0 : CARD_TIMING.connector, ease: SWEEP_EASE }} onAnimationComplete={() => setExpanded(true)} />
-      <rect className="connector-origin" x={layout.center.x - 7} y={layout.center.y - 7} width="14" height="14" />
+      {placement && <motion.path className="connector-band" d={ray} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: reduced ? 0 : CARD_TIMING.connector, ease: SWEEP_EASE }} onAnimationComplete={() => setExpanded(true)} />}
+      {placement && <rect className="connector-origin" x={layout.center.x - 7} y={layout.center.y - 7} width="14" height="14" />}
     </svg>
-    <motion.article id="island-card" className="island-card" aria-live="polite" style={{ clipPath }} aria-label={island.title}>
+    <motion.article ref={cardRef} id="island-card" className="island-card" aria-live="polite" style={{ clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
       <span className="card-caption">// Island</span>
       <div className="card-heading"><h1>{island.title}</h1></div>
       <button type="button" className="close-card" aria-label="关闭岛屿卡片" onClick={onClose}><svg className="card-pixels" viewBox="0 0 30 30" aria-hidden="true"><path d="M0 0h10v10H0ZM20 0h10v10H20ZM10 10h10v10H10ZM20 20h10v10H20Z" /></svg></button>
       <div className="card-rule"><span className="card-index">#{String(index).padStart(2, '0')}</span></div>
       {island.desc && <p className="card-description">{island.desc}</p>}
       <ul className="tags flex flex-wrap justify-end" aria-label="标签">{island.tags.map(tag => <li className="tag" key={tag}><span>{tag}</span>{[0, 1, 2, 3].map(corner => <i key={corner} className={`tag-corner tag-corner-${corner}`} aria-hidden="true" />)}</li>)}</ul>
-      <span className="corners" aria-hidden="true">{[false, true, true, true].map((filled, corner) => <span key={corner} className={`corner corner-${corner}${filled ? ' filled' : ''}`} />)}</span>
+      <span className="corners" aria-hidden="true">{[0, 1, 2, 3].map(corner => <span key={corner} className={`corner corner-${corner}${corner === placement?.corner ? '' : ' filled'}`} />)}</span>
       <span className="card-date">{island.date ? <time dateTime={island.date}>{new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Shanghai' }).format(new Date(island.date))}</time> : 'long term project'}</span>
     </motion.article>
   </motion.div>
@@ -71,8 +89,6 @@ export function Log() {
   const pageStart = Math.max(1, Math.min(page - 1, count - shownPages + 1))
   const pageNumbers = Array.from({ length: shownPages }, (_, i) => pageStart + i)
   const terrain = layouts.filter((_, index) => index !== activeIndex).map(layout => layout.shape).join('')
-  const cardCorner = { x: world.width * (narrow ? 0.1 : 0.444), y: world.height * (narrow ? 0.38 : 0.384) }
-  const ray = activeLayout ? `M${activeLayout.center.x},${activeLayout.center.y}L${cardCorner.x},${cardCorner.y}` : ''
 
   useLayoutEffect(() => {
     const observer = new ResizeObserver(([entry]) => {
@@ -135,7 +151,7 @@ export function Log() {
         </svg>
         {visible.map((island, i) => <IslandTile key={island.id} island={island} index={i} layout={layouts[i]} unit={unit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}
       </div>
-      <AnimatePresence>{active && activeLayout && <IslandSelection key={active.id} island={active} layout={activeLayout} world={world} ray={ray} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
+      <AnimatePresence>{active && activeLayout && <IslandSelection key={active.id} island={active} layout={activeLayout} world={world} unit={unit} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
     </div>
     <footer className="log-footer flex items-end justify-between"><span className="page-coordinate">ISLANDS {String((page - 1) * PAGE_SIZE + 1).padStart(2, '0')}—{String(Math.min(page * PAGE_SIZE, islands.length)).padStart(2, '0')} / {islands.length}</span>
       <nav className="pagination flex items-center" aria-label="日志分页">

@@ -67,7 +67,9 @@ test('world grid, hover colors, card graphics and regular description text match
     const end = new DOMPoint(x2, y2).matrixTransform(svg.getScreenCTM()!)
     const island = document.querySelector('.island.selected')!.getBoundingClientRect()
     const card = document.querySelector('#island-card')!.getBoundingClientRect()
-    return [start.x - island.x - island.width / 2, start.y - island.y - island.height / 2, end.x - card.x, end.y - card.y]
+    const origin = { x: island.x + island.width / 2, y: island.y + island.height / 2 }
+    const corner = { x: origin.x > card.x + card.width / 2 ? card.right : card.x, y: origin.y > card.y + card.height / 2 ? card.bottom : card.y }
+    return [start.x - origin.x, start.y - origin.y, end.x - corner.x, end.y - corner.y]
   })
   for (const delta of endpoints) expect(Math.abs(delta)).toBeLessThan(0.1)
   await expect(page.locator('.connector-band')).toHaveCSS('stroke', 'rgb(246, 246, 246)')
