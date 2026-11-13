@@ -30,12 +30,13 @@ export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { varian
         const children = paths.current?.children
         generator(values).forEach((contour, index) => {
           const d = contour.coordinates.flatMap(polygon => polygon.map(ring => {
-            const first = ring[0]
-            const end = ring[ring.length - 1]
-            let path = `M${(first[0] + end[0]) / 2},${(first[1] + end[1]) / 2}`
-            ring.forEach((point, i) => {
-              const next = ring[(i + 1) % ring.length]
-              path += `Q${point[0].toFixed(2)},${point[1].toFixed(2)} ${((point[0] + next[0]) / 2).toFixed(2)},${((point[1] + next[1]) / 2).toFixed(2)}`
+            const points = ring.slice(0, -1)
+            const first = points[0]
+            const end = points[points.length - 1]
+            let path = `M${((first[0] + end[0]) / 2).toFixed(3)},${((first[1] + end[1]) / 2).toFixed(3)}`
+            points.forEach((point, i) => {
+              const next = points[(i + 1) % points.length]
+              path += `Q${point[0].toFixed(3)},${point[1].toFixed(3)} ${((point[0] + next[0]) / 2).toFixed(3)},${((point[1] + next[1]) / 2).toFixed(3)}`
             })
             return `${path}Z`
           })).join('')
@@ -62,7 +63,7 @@ export function NoiseField({ kind }: { kind: 'canine' | 'sea' }) {
     const context = canvas.getContext('2d')!
     const scene = canvas.closest<HTMLElement>('.scene')!
     const noise = createNoise3D(randomSource(443))
-    const speed = kind === 'canine' ? 0.00018 : 0.00006
+    const speed = kind === 'canine' ? 0.00018 : 0.00009
     const frameInterval = 1000 / (kind === 'sea' ? 60 : 24)
     let image: ImageData
     let render: ReturnType<typeof createHalftone>
