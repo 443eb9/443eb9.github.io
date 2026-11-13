@@ -1,6 +1,6 @@
 # Island content
 
-Use Node.js 22.18 or later. Source documents and attachments belong under `.content/islands/islands`. Fetch the full `/islands/` tree from `443eb9/islands`. Relative attachment URLs resolve from the document directory.
+Use Node.js 22.18 or later. Source documents and attachments belong under `.content/islands/islands`. Fetch the full `/islands/` tree from `443eb9/islands`. Relative attachment URLs resolve from the document directory. Each titled document uses a unique positive-integer source directory. Its public route contains that directory number, such as `/island/39` for `39/tenten-13.md`. Source identifiers and encryption contexts retain the full relative Markdown path.
 
 Run `npm run build` to validate references and create the site. A missing attachment, invalid encryption marker, or shared public/private attachment stops publication. Content generation clears previous generated content, published attachments, and `dist` before validation.
 

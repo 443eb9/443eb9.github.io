@@ -5,14 +5,18 @@ import { mkdtemp, mkdir, readFile, writeFile, rm, access } from 'node:fs/promise
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseIsland } from '../scripts/content.mjs'
+import { collectIslands, parseIsland } from '../scripts/content.mjs'
 import { encryptedSections, islandAssetUrl, islandId, islandPath } from '../src/island-content.ts'
 
-test('island routes preserve nested Unicode content identifiers', () => {
-  const id = '14/笔记 #1.md'
-  assert.equal(islandId(islandPath(id)), id)
+test('island routes use only the numeric source directory', () => {
+  assert.equal(islandPath('39/tenten-13.md'), '/island/39')
+  assert.equal(islandPath('14/笔记 #1.md'), '/island/14')
+  assert.equal(islandId('/island/39'), '39')
+  assert.equal(islandId('/island/39/'), '39')
+  assert.equal(islandId('/island/39/tenten-13.md'), null)
   assert.equal(islandId('/island/%broken'), null)
   assert.equal(islandId('/log'), null)
+  assert.throws(() => islandPath('notes/article.md'), /positive integer directory/)
 })
 
 test('content includes the Markdown body after YAML and TOML frontmatter', () => {
@@ -43,7 +47,18 @@ test('build publishes Markdown bodies, attachments and direct island pages', asy
     await mkdir(join(directory, 'dist'))
     await writeFile(join(directory, 'dist/index.html'), '<html><body>App</body></html>')
     execFileSync(process.execPath, [fileURLToPath(new URL('../scripts/pages.mjs', import.meta.url))], { cwd: directory })
-    assert.equal(await readFile(join(directory, 'dist/island/11/测试.md/index.html'), 'utf8'), '<html><body>App</body></html>')
+    assert.equal(await readFile(join(directory, 'dist/island/11/index.html'), 'utf8'), '<html><body>App</body></html>')
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('source documents require unique numeric island routes', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'island-route-'))
+  try {
+    await mkdir(join(directory, '39'))
+    for (const name of ['one.md', 'two.md']) await writeFile(join(directory, '39', name), '---\ntitle: Test\n---\nBody')
+    await assert.rejects(collectIslands(directory), /route id 39 must be unique/)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

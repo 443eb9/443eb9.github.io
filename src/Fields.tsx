@@ -8,7 +8,7 @@ import { createContourRenderer } from './contours'
 
 const NOISE_SPEED = 0.00018
 
-export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { variant?: number; frameRate?: number; scale?: number }) {
+export function Contours({ variant = 0, frameRate = 10, scale = 0.95, pixelRatio }: { variant?: number; frameRate?: number; scale?: number; pixelRatio?: number }) {
   const host = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
 
@@ -26,7 +26,7 @@ export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { varian
     const observer = new ResizeObserver(([entry]) => {
       const style = getComputedStyle(element)
       const color = style.color.match(/[\d.]+/g)!.slice(0, 3).map(Number)
-      renderer.resize(entry.contentRect.width, entry.contentRect.height, window.devicePixelRatio, color, parseFloat(style.strokeWidth))
+      renderer.resize(entry.contentRect.width, entry.contentRect.height, pixelRatio ?? window.devicePixelRatio, color, parseFloat(style.strokeWidth))
       ready = true
       last = -frameInterval
       if (reduced) paint(0)
@@ -70,7 +70,7 @@ export function Contours({ variant = 0, frameRate = 10, scale = 0.95 }: { varian
       renderer.dispose()
       canvas.remove()
     }
-  }, [variant, frameRate, scale, reduced])
+  }, [variant, frameRate, scale, pixelRatio, reduced])
 
   return <div ref={host} className="contour-field" aria-hidden="true" />
 }

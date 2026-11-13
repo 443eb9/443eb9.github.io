@@ -2,20 +2,20 @@ import Markdown from 'react-markdown'
 import { markdownPlugins } from './markdown'
 import islands from './generated/islands.json'
 import { Contours } from './Fields'
-import { encryptedSections, islandAssetUrl } from './island-content'
+import { encryptedSections, islandAssetUrl, islandRouteId } from './island-content'
 
 const whiteBlocks = [[19.3, 55.6, 12.8, 16], [5.9, 71.8, 13.6, 11.5], [19.5, 77.4, 12.6, 15.7], [5.8, 87.4, 13.7, 11.5], [76.2, 71.3, 20.8, 13]]
 const blueBlocks = [[77, 16.5, 2.5], [92.4, 23.5, 0.8], [16.7, 66.8, 2.5], [14.9, 71.1, 1.2], [19.5, 72.9, 1.6], [3.3, 90.6, 2.5], [90.6, 81.5, 2.5], [96.8, 89.6, 0.8], [73.4, 94.2, 2.2]]
 
 export function Island({ id }: { id: string }) {
-  const index = islands.findIndex(island => island.id === id)
+  const index = islands.findIndex(island => islandRouteId(island.id) === id)
   const island = islands[index]
   if (!island) return <main className="missing"><h1>404 · 这片海域等待探索</h1><a className="frame-button" href="/log">返回日志</a></main>
 
   return <main className="island-detail scene">
     <div className="island-backdrop" aria-hidden="true">
       <div className="island-silhouette" />
-      <Contours scale={1.8} />
+      <Contours scale={1.8} frameRate={60} pixelRatio={1} />
       {blueBlocks.map(([left, top, width], i) => <i key={`blue-${i}`} className="detail-blue-block" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%` }} />)}
       {whiteBlocks.map(([left, top, width, height], i) => <i key={`white-${i}`} className="detail-white-block" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }} />)}
       <span className="detail-unknown">UNKNOWN</span><span className="detail-alert">[!]</span><span className="detail-browser">LOG BROWSER</span>

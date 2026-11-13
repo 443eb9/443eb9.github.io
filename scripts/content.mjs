@@ -2,7 +2,7 @@ import { readdir, readFile, mkdir, rm, writeFile } from 'node:fs/promises'
 import { resolve, relative, join, dirname } from 'node:path'
 import Markdown from 'react-markdown'
 import { markdownPlugins } from '../src/markdown.ts'
-import { ENCRYPT_BEGIN, ENCRYPT_END, encryptedSections, islandAssetUrl } from '../src/island-content.ts'
+import { ENCRYPT_BEGIN, ENCRYPT_END, encryptedSections, islandAssetUrl, islandRouteId } from '../src/island-content.ts'
 import { encryptContent, encryptionKey } from './encryption.mjs'
 import { pathToFileURL } from 'node:url'
 import { parse as parseToml } from 'smol-toml'
@@ -37,6 +37,7 @@ export function parseIsland(source, id) {
 
 export async function collectIslands(root) {
   const result = []
+  const routeIds = new Set()
   async function visit(directory) {
     const entries = await readdir(directory, { withFileTypes: true })
     entries.sort((a, b) => a.name.localeCompare(b.name, 'en'))
@@ -46,12 +47,17 @@ export async function collectIslands(root) {
       if (entry.isFile() && /\.md$/i.test(entry.name)) {
         const id = relative(root, path).replaceAll('\\', '/')
         const island = parseIsland(await readFile(path, 'utf8'), id)
-        if (island) result.push(island)
+        if (island) {
+          const routeId = islandRouteId(id)
+          if (routeIds.has(routeId)) throw new Error(`${id}: island route id ${routeId} must be unique.`)
+          routeIds.add(routeId)
+          result.push(island)
+        }
       }
     }
   }
   await visit(root)
-  return result.sort((a, b) => Number(b.id.split('/')[0]) - Number(a.id.split('/')[0]) || a.id.localeCompare(b.id, 'en'))
+  return result.sort((a, b) => Number(islandRouteId(b.id)) - Number(islandRouteId(a.id)) || a.id.localeCompare(b.id, 'en'))
 }
 
 async function publicationAssets(root, islands, sections) {

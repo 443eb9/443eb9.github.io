@@ -42,7 +42,7 @@ export function Metadata() {
 
   return <main className="metadata scene">
     <div className="metadata-backdrop" aria-hidden="true">
-      <Contours scale={1.8} />
+      <Contours scale={1.8} frameRate={60} pixelRatio={1} />
       {whiteBlocks.map(([left, top, width, height], index) => <i key={`white-${index}`} className="detail-white-block" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }} />)}
       {blueBlocks.map(([left, top, width], index) => <i key={`blue-${index}`} className="detail-blue-block" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%` }} />)}
     </div>

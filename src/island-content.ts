@@ -17,13 +17,18 @@ export function encryptedSections(body: string) {
   return sections
 }
 
-export function islandPath(id: string) {
-  return `/island/${id.split('/').map(encodeURIComponent).join('/')}`
+export function islandRouteId(sourcePath: string) {
+  const id = sourcePath.split('/')[0]
+  if (!/^[1-9]\d*$/.test(id)) throw new Error(`${sourcePath}: island route id must be a positive integer directory.`)
+  return id
+}
+
+export function islandPath(sourcePath: string) {
+  return `/island/${islandRouteId(sourcePath)}`
 }
 
 export function islandId(path: string) {
-  if (!path.startsWith('/island/')) return null
-  try { return decodeURIComponent(path.slice('/island/'.length)) } catch { return null }
+  return /^\/island\/([1-9]\d*)\/?$/.exec(path)?.[1] ?? null
 }
 
 export function islandAssetUrl(url: string, id: string) {
