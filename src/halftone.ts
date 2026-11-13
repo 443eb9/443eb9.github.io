@@ -1,15 +1,19 @@
+import { createSeaHalftone } from './sea-halftone.ts'
+
 export type FieldPointer = { x: number; y: number }
 export type NoiseSample = (x: number, y: number, z: number) => number
 
 type Brush = { offsets: Int32Array; colors: Uint32Array; radius: number }
 
-export function createHalftone(image: ImageData, noise: NoiseSample, kind: 'canine' | 'sea', unit: number) {
+export function createHalftone(image: ImageData, noise: NoiseSample, kind: 'canine' | 'sea', unit: number): (time: number, pointer: FieldPointer) => void {
+  if (kind === 'sea') return createSeaHalftone(image, noise, unit)
+
   const { width, height, data } = image
   const pixels = new Uint32Array(data.buffer, data.byteOffset, data.byteLength / 4)
-  const spacing = (kind === 'canine' ? 6 : 3) * unit
+  const spacing = 6 * unit
   const reach = 130 * unit
   const reachSquared = reach * reach
-  const colors = kind === 'canine' ? [[161, 169, 208]] : [[70, 100, 244], [180, 181, 190]]
+  const colors = [[161, 169, 208]]
   const brushes = colors.map(([red, green, blue]) => Array.from({ length: Math.ceil(spacing * 0.5 * 8) + 1 }, (_, step): Brush => {
     const radius = step / 8
     const extent = Math.ceil(radius + 0.5)
@@ -55,12 +59,7 @@ export function createHalftone(image: ImageData, noise: NoiseSample, kind: 'cani
         const dy = y - pointer.y
         const distanceSquared = dx * dx + dy * dy
         const falloff = distanceSquared < reachSquared ? (1 - Math.sqrt(distanceSquared) / reach) ** 2 : 0
-        if (kind === 'canine') {
-          dot(x, y, Math.min(spacing * 0.47, (0.3 + value * 2.3 + falloff * 1.1) * unit), 0)
-        } else {
-          dot(x, y, (0.27 + value * 0.26 + falloff * 0.5) * unit, 0)
-          dot(x + spacing / 2, y + spacing / 2, 0.46 * unit, 1)
-        }
+        dot(x, y, Math.min(spacing * 0.47, (0.3 + value * 2.3 + falloff * 1.1) * unit), 0)
       }
     }
   }

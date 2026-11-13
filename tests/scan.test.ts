@@ -46,7 +46,7 @@ test('gray block keyframes have local stepped segments and a stable middle', () 
 
 test('halftone responds to the pointer and changes with the noise time coordinate', () => {
   const image = { width: 80, height: 60, data: new Uint8ClampedArray(80 * 60 * 4) } as ImageData
-  const render = createHalftone(image, (_x, _y, time) => Math.sin(time), 'sea', 1)
+  const render = createHalftone(image, (_x, _y, time) => Math.sin(time), 'canine', 1)
   const alpha = () => image.data.reduce((sum, value, index) => sum + (index % 4 === 3 ? value : 0), 0)
   render(0, { x: -10000, y: -10000 })
   const initial = alpha()
