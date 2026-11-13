@@ -172,7 +172,6 @@ export function Log() {
 
   return <main ref={scene} className="log scene relative isolate overflow-hidden" style={{ '--land-size': `${grid.size * unit}px` } as CSSProperties}>
     <div className="log-background"><NoiseField kind="sea" /></div>
-    <div className="log-mark" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</div>
     <header className="log-header flex items-start justify-between">
       <div className="directory">
         <button className="directory-toggle" type="button" aria-expanded={menuOpen} aria-controls="directory-list" onClick={() => setMenuOpen(value => !value)}><span className="hamburger" aria-hidden="true" />目录</button>
