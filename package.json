@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "content": "node --env-file-if-exists=.env.local scripts/content.mjs",
+    "content": "node --env-file-if-exists=.env.local scripts/content.mjs && node scripts/friends.mjs",
     "build": "npm run content && tsc -b && vite build && node scripts/pages.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test tests/*.test.ts",

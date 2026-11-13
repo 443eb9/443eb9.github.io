@@ -35,7 +35,6 @@ export function Home() {
     <motion.div className="scene-layer layer-four" style={{ x: nearX, y: nearY }}>
       <div className="top-rail" aria-hidden="true"><i className="rail-start" /><i className="rail-end" /></div>
       <svg className="left-rail" viewBox="0 0 30 124" aria-hidden="true"><path fill="var(--gray)" d="M2.5 30h19.5v41H7v53H2.5Z" /><path fill="var(--blue)" d="M0 0h22v31H3v73H0Z" /></svg>
-      <div className="vertical-rail" aria-hidden="true" />
       <header className="identity flex items-start">
         <img src="/images/avatar-original.png" className="avatar" width="164" height="164" alt="头像" />
         <div className="identity-copy"><p className="intro">I am</p><h1>44eb9#C</h1><div className="role-area"><ScanText /></div>
@@ -49,8 +48,8 @@ export function Home() {
     </motion.div>
     <motion.div className="scene-layer layer-five" style={{ x: topX, y: topY }}>
       <nav className="home-nav" aria-label="主导航">
-        {['日志', '元数据', '邻域', '开往'].map((label, i) => i === 0
-          ? <a className="frame-button" href="/log" key={label}><span className="button-label">{label}</span><span className="button-cover" aria-hidden="true">{label}</span><Corners seed={i} /></a>
+        {[{ label: '日志', href: '/log' }, { label: '元数据', href: '/metadata' }, { label: '邻域', href: '/neighbourhood' }, { label: '开往', href: null }].map(({ label, href }, i) => href
+          ? <a className="frame-button" href={href} key={label}><span className="button-label">{label}</span><span className="button-cover" aria-hidden="true">{label}</span><Corners seed={i} /></a>
           : <button className="frame-button" type="button" key={label} onClick={() => setNotice(`${label} · 建设中`)}><span className="button-label">{label}</span><span className="button-cover" aria-hidden="true">{label}</span><Corners seed={i} /></button>)}
       </nav>
     </motion.div>

@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, typ
 import { Home } from './Home'
 import { Log } from './Log'
 import { Island } from './Island'
+import { Metadata } from './Metadata'
+import { Neighbourhood } from './Neighbourhood'
 import islands from './generated/islands.json'
 import { islandId } from './island-content'
 
@@ -21,8 +23,13 @@ function pageLocation(url: Pick<Location, 'pathname' | 'search' | 'hash'>, key: 
 }
 
 function Page({ path }: { path: string }) {
+  if (path === '/') return <Home />
+  if (path === '/log') return <Log />
+  if (path === '/metadata') return <Metadata />
+  if (path === '/neighbourhood') return <Neighbourhood />
+
   const id = islandId(path)
-  return path === '/' ? <Home /> : path === '/log' ? <Log /> : id !== null ? <Island id={id} /> : <main className="missing"><h1>404 · 这片海域等待探索</h1><a className="frame-button" href="/">返回群岛</a></main>
+  return id !== null ? <Island id={id} /> : <main className="missing"><h1>404 · 这片海域等待探索</h1><a className="frame-button" href="/">返回群岛</a></main>
 }
 
 export function App() {
@@ -70,7 +77,8 @@ export function App() {
   useEffect(() => {
     const page = entering ?? current
     const island = islands.find(item => item.id === islandId(page.path))
-    document.title = island ? `${island.title} · Crepuscular Archipelago` : page.path === '/' ? 'Crepuscular Archipelago · 443eb9#C' : page.path === '/log' ? '日志 · Crepuscular Archipelago' : '404 · Crepuscular Archipelago'
+    const titles: Record<string, string> = { '/': 'Crepuscular Archipelago · 443eb9#C', '/log': '日志 · Crepuscular Archipelago', '/metadata': '元数据 · Crepuscular Archipelago', '/neighbourhood': '邻域 · Crepuscular Archipelago' }
+    document.title = island ? `${island.title} · Crepuscular Archipelago` : titles[page.path] ?? '404 · Crepuscular Archipelago'
     if (!entering) root.current?.querySelector<HTMLElement>('[data-page-view]')?.focus({ preventScroll: true })
   }, [current, entering])
 

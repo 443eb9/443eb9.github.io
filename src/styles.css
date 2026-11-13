@@ -58,7 +58,6 @@ button:disabled { cursor: default; }
 .rail-start { left: calc(-6 * var(--u)); }
 .rail-end { right: calc(-6 * var(--u)); }
 .left-rail { position: absolute; left: 1.6%; top: 5%; width: calc(30 * var(--u)); height: calc(124 * var(--u)); }
-.vertical-rail { position: absolute; left: 51.8%; top: 3.5%; bottom: 0; width: calc(20 * var(--u)); background: var(--blue); }
 .identity { position: absolute; top: 9.85%; left: 5%; gap: calc(42 * var(--u)); }
 .avatar { width: calc(168 * var(--u)); height: calc(168 * var(--u)); object-fit: cover; border: calc(2.5 * var(--u)) solid var(--blue); }
 .identity-copy { padding-top: calc(11 * var(--u)); width: calc(345 * var(--u)); }
@@ -214,7 +213,6 @@ button:disabled { cursor: default; }
   .role-area { height: 32px; }
   .identity-rules { width: 110px; height: auto; margin: 0 0 0 1px; }
   .canine { left: 10%; top: 7%; width: 95%; height: 80%; }
-  .vertical-rail { left: 60%; top: 34%; width: 12px; bottom: 20%; }
   .valley { left: 8%; top: 43%; bottom: auto; width: 45%; height: 24%; }
   .panel-label { font-size: 18px; white-space: normal; top: -48px; max-width: 200px; }
   .height-map { top: 37%; left: 67%; width: 25%; height: 18%; }
@@ -320,6 +318,56 @@ button:disabled { cursor: default; }
   .detail-caption { left: 18px; }
   .detail-close { position: absolute; top: 24px; right: 14px; }
   .island-markdown { font-size: 16px; }
+}
+
+.metadata { position: relative; isolation: isolate; display: grid; grid-template-columns: 17.6vw 2vw minmax(0, 1fr) 1.1vw 20.3vw; grid-template-rows: minmax(0, 1fr); height: 100svh; min-height: 0; overflow: hidden; padding: 6.4svh 2.9vw 5.2svh 6.4vw; background: #f0f0f0; }
+.metadata-backdrop { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.metadata-backdrop .contour-field { color: var(--gray); stroke-width: 2px; }
+.metadata-identity { grid-column: 1; min-width: 0; }
+.metadata-avatar { display: block; width: 100%; aspect-ratio: 1; border: 0.4vw solid var(--blue); }
+.metadata-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.metadata-name { display: grid; place-items: center; height: 4.2vw; margin-top: 0.9vw; border: 2px solid var(--blue); background: var(--paper); font-size: 2.9vw; line-height: 1; }
+.metadata-intro { grid-column: 3; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1vw 0.8vw; border: 2px solid var(--blue); background: var(--paper); scrollbar-width: thin; scrollbar-color: var(--blue) transparent; }
+.metadata-content { font-size: clamp(16px, 1.25vw, 26px); line-height: 1.32; }
+.metadata-intro:focus-visible { outline: 2px dashed var(--blue); outline-offset: -7px; }
+.metadata-social { grid-column: 5; display: flex; flex-direction: column; align-self: start; gap: 0.65vw; min-width: 0; }
+.metadata-link { display: flex; align-items: center; gap: 0.8vw; min-height: 5.5vw; padding: 0.6vw 0.9vw; border: 1px solid var(--paper); background: var(--blue); color: var(--paper); font-size: 2.75vw; line-height: 1; white-space: nowrap; }
+.metadata-link[href]:hover { outline: 2px solid var(--blue); outline-offset: 3px; }
+.metadata-icon { flex: 0 0 4vw; width: 4vw; height: 4vw; background: currentColor; mask-position: center; mask-repeat: no-repeat; mask-size: contain; }
+.metadata-icon-github { mask-image: url('/images/icons/github.svg'); }
+.metadata-icon-mail { mask-image: url('/images/icons/mail.svg'); }
+.metadata-icon-notebook { mask-image: url('/images/icons/notebook.svg'); }
+.metadata-icon-bilibili { mask-image: url('/images/icons/bilibili.svg'); }
+.metadata-icon-x { mask-image: url('/images/icons/x.svg'); }
+.neighbourhood .log-header { top: 1.5%; right: 3.7%; justify-content: flex-end; }
+.neighbourhood .island.selected .island-title { visibility: visible; }
+.friend-card { display: grid; grid-template-columns: calc(120 * var(--u)) minmax(0, 1fr); align-items: start; gap: calc(16 * var(--u)); width: 43%; min-height: calc(138 * var(--u)); padding: calc(7 * var(--u)); }
+.friend-background { position: absolute; inset: 0; background-position: center; background-size: cover; opacity: 0.35; filter: grayscale(0.4); pointer-events: none; }
+.friend-avatar { position: relative; width: calc(120 * var(--u)); height: calc(120 * var(--u)); object-fit: cover; border: calc(3 * var(--u)) solid var(--blue); }
+.friend-copy { position: relative; min-width: 0; padding-top: calc(10 * var(--u)); }
+.friend-copy h1 { margin: 0; font-size: calc(25 * var(--u)); font-weight: 400; line-height: 1.2; overflow-wrap: anywhere; }
+.friend-copy h1 span { padding: 0 0.2em; background: var(--paper); box-decoration-break: clone; }
+.friend-copy p { margin: calc(6 * var(--u)) 0 0; padding-right: calc(60 * var(--u)); font-size: calc(16.667 * var(--u)); line-height: 1.35; overflow-wrap: anywhere; }
+.friend-card .card-caption { z-index: 2; }
+.friend-card .friend-close { top: auto; bottom: calc(7 * var(--u)); right: calc(7 * var(--u)); width: calc(55 * var(--u)); height: calc(55 * var(--u)); padding: calc(5 * var(--u)); border: 0; background: var(--paper); }
+.friend-close svg { display: block; width: 100%; height: 100%; }
+@media (max-width: 800px) {
+  .metadata { grid-template-columns: minmax(96px, 25%) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 20px; padding: 22px; }
+  .metadata-identity { grid-column: 1; grid-row: 1; }
+  .metadata-avatar { border-width: 4px; }
+  .metadata-name { height: 36px; margin-top: 8px; font-size: 18px; }
+  .metadata-social { grid-column: 2; grid-row: 1; gap: 6px; }
+  .metadata-link { min-height: 34px; gap: 8px; padding: 4px 8px; font-size: 16px; }
+  .metadata-icon { flex-basis: 24px; width: 24px; height: 24px; }
+  .metadata-intro { grid-column: 1 / -1; grid-row: 2; padding: 14px 12px; }
+  .metadata-content { font-size: 16px; line-height: 1.5; }
+  .neighbourhood .log-header { top: 3%; right: 6%; }
+  .friend-card { width: calc(100% - 32px); min-height: 130px; grid-template-columns: 82px minmax(0, 1fr); gap: 10px; padding: 8px; }
+  .friend-avatar { width: 82px; height: 82px; border-width: 2px; }
+  .friend-copy { padding-top: 2px; }
+  .friend-copy h1 { font-size: 20px; }
+  .friend-copy p { font-size: 16px; padding-right: 32px; }
+  .friend-card .friend-close { width: 30px; height: 30px; padding: 3px; bottom: 6px; right: 6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
