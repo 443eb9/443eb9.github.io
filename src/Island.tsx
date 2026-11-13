@@ -2,6 +2,7 @@ import Markdown from 'react-markdown'
 import { markdownPlugins } from './markdown'
 import islands from './generated/islands.json'
 import { Contours } from './Fields'
+import { IslandComments } from './IslandComments'
 import { encryptedSections, islandAssetUrl, islandRouteId } from './island-content'
 
 const whiteBlocks = [[19.3, 55.6, 12.8, 16], [5.9, 71.8, 13.6, 11.5], [19.5, 77.4, 12.6, 15.7], [5.8, 87.4, 13.7, 11.5], [76.2, 71.3, 20.8, 13]]
@@ -31,7 +32,10 @@ export function Island({ id }: { id: string }) {
     </aside>
     <article className="detail-body detail-frame" aria-label={island.title}>
       <span className="detail-caption">// Island #{String(index + 1).padStart(2, '0')}</span>
-      <div className="detail-scroll" role="region" aria-label="岛屿正文" tabIndex={0}><IslandBody id={island.id} body={island.body} encrypted={island.encrypted} /></div>
+      <div className="detail-scroll" role="region" aria-label="岛屿正文" tabIndex={0}>
+        <div className="detail-article-content"><IslandBody id={island.id} body={island.body} encrypted={island.encrypted} /></div>
+        <IslandComments key={island.id} title={island.title} />
+      </div>
       <FrameCorners />
     </article>
     <a className="detail-close" href="/log" aria-label="返回日志">X</a>

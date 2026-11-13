@@ -8,6 +8,7 @@ import { ISLAND_DURATION, labelBlink } from './log-animation'
 import { islandPath } from './island-content'
 import { VideoIslands } from './VideoIslands'
 import { IslandBody } from './Island'
+import { IslandComments } from './IslandComments'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
@@ -60,7 +61,7 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
   const filterId = `${useId().replaceAll(':', '')}-connector-colors`
   const [cardSize, setCardSize] = useState<{ width: number; height: number } | null>(null)
   const direct = Boolean(island.friend)
-  const connection = cardSize && !direct ? cardLayout(layout, cardSize, world, island.ty === 'note' ? 0 : 90) : null
+  const connection = cardSize && !direct ? cardLayout(layout, cardSize, world, island.ty === 'note' ? 40 : 90) : null
   const placement = cardSize && direct ? {
     left: Math.max(16, Math.min(layout.center.x - cardSize.width / 2, world.width - cardSize.width - 16)),
     top: Math.max(90, Math.min(layout.center.y - cardSize.height / 2, world.height - cardSize.height - 90)),
@@ -117,7 +118,10 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
       </> : <>
         <div className="card-heading"><h1>{island.title}</h1></div>
         <div className="card-rule"><span className="card-index">#{String(index).padStart(2, '0')}</span></div>
-        {island.ty === 'note' ? <div className="card-body" role="region" aria-label="岛屿正文" tabIndex={0}><IslandBody id={island.id} body={island.body ?? ''} encrypted={island.encrypted ?? false} /></div> : island.desc && <p className="card-description">{island.desc}</p>}
+        {island.ty === 'note' ? <div className="card-body" role="region" aria-label="岛屿正文" tabIndex={0}>
+          <IslandBody id={island.id} body={island.body ?? ''} encrypted={island.encrypted ?? false} />
+          <IslandComments key={island.id} title={island.title} />
+        </div> : island.desc && <p className="card-description">{island.desc}</p>}
         <ul className="tags flex flex-wrap justify-end" aria-label="标签">{island.tags.map(tag => <li className="tag" key={tag}><span>{tag}</span>{[0, 1, 2, 3].map(corner => <i key={corner} className={`tag-corner tag-corner-${corner}`} aria-hidden="true" />)}</li>)}</ul>
         <span className="card-date">{island.date ? <time dateTime={island.date}>{new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Shanghai' }).format(new Date(island.date))}</time> : 'long term project'}</span>
       </>}

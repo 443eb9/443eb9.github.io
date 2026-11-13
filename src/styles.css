@@ -173,7 +173,7 @@ button:disabled { cursor: default; }
 .connector-origin { fill: var(--blue); stroke: var(--paper); stroke-width: 2; }
 .connector-endpoint { position: absolute; width: calc(16 * var(--u)); height: calc(16 * var(--u)); transform: translate(-50%, -50%); border: calc(1.5 * var(--u)) solid var(--blue); background: var(--paper); z-index: 6; pointer-events: none; }
 .island-card { display: flex; flex-direction: column; position: absolute; width: 41.3%; min-height: calc(200 * var(--u)); background: var(--paper); border: calc(1.5 * var(--u)) solid var(--blue); padding: calc(12 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)); pointer-events: auto; }
-.note-card { max-height: 100%; }
+.note-card { max-height: calc(100% - 80 * var(--u)); }
 .note-card > :not(.card-body) { flex-shrink: 0; }
 .card-body { min-height: 0; overflow: auto; overscroll-behavior: contain; margin-bottom: calc(14 * var(--u)); }
 .card-caption { position: absolute; top: calc(-23 * var(--u)); left: calc(12 * var(--u)); font-size: calc(16.667 * var(--u)); }
@@ -285,6 +285,10 @@ button:disabled { cursor: default; }
 .detail-body { width: 100%; max-width: 800px; height: 100%; min-width: 0; min-height: 0; justify-self: center; }
 .detail-scroll { height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 22px 16px 32px; scrollbar-width: thin; scrollbar-color: var(--blue) transparent; }
 .detail-scroll:focus-visible { outline: 2px dashed var(--blue); outline-offset: -6px; }
+.detail-article-content { min-height: 100%; display: flow-root; }
+.island-comments { min-height: 100%; margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--blue); }
+.island-comments h2 { margin: 0 0 24px; font-size: 24px; font-weight: bold; }
+.island-comments giscus-widget { display: block; width: 100%; }
 .detail-caption { position: absolute; left: 1.4vw; top: -0.65em; padding: 0 0.7em; color: var(--paper); background: var(--blue); font-size: clamp(16px, 1.25vw, 25px); line-height: 1.2; }
 .detail-close { margin-left: -0.7vw; justify-self: start; align-self: start; display: grid; place-items: center; width: clamp(42px, 3.5vw, 70px); aspect-ratio: 1; border: 2px solid var(--blue); background: var(--paper); box-shadow: 5px 5px 0 var(--gray); font-size: clamp(32px, 2.8vw, 56px); line-height: 1; }
 .detail-close:hover { color: var(--paper); background: var(--blue); }
