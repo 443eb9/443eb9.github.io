@@ -3,7 +3,7 @@ import { animate, motion, useMotionValue, useTransform } from 'motion/react'
 import { Home } from './Home'
 import { Log } from './Log'
 
-const WIPE = { duration: 0.65, width: 24 } as const
+const WIPE = { duration: 0.65, width: 8, widthScale: 5 } as const
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
 
 function subscribeReducedMotion(onChange: () => void) {
@@ -33,6 +33,7 @@ export function App() {
   const progress = useMotionValue(0)
   const reveal = useTransform(progress, value => `inset(0 ${(100 + WIPE.width) * (1 - value)}% 0 0)`)
   const barLeft = useTransform(progress, value => `${-WIPE.width + (100 + WIPE.width) * value}vw`)
+  const barWidth = useTransform(progress, value => `${WIPE.width * (1 + (WIPE.widthScale - 1) * value ** 2)}vw`)
 
   useEffect(() => {
     const restore = () => setRequested(pageLocation(window.location, ++sequence.current))
@@ -93,6 +94,6 @@ export function App() {
         <div className="page-content" style={entering && !incoming ? { transform: `translateY(${-oldScroll}px)` } : undefined}><Page path={page.path} /></div>
       </motion.div>
     })}
-    {entering && <motion.div className="page-wipe" style={{ width: `${WIPE.width}vw`, left: barLeft }} aria-hidden="true" />}
+    {entering && <motion.div className="page-wipe" style={{ width: barWidth, left: barLeft }} aria-hidden="true" />}
   </div>
 }
