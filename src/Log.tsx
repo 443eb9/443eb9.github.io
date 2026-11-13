@@ -164,7 +164,7 @@ export function Log() {
                 <feComposite in2="ring" operator="in" />
               </filter>
             </>}
-            <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={grid.x} y={grid.y} width={grid.size} height={grid.size}><path d={`M${grid.size},0H0V${grid.size}`} fill="none" stroke="var(--paper)" strokeWidth="1.5" /></pattern>
+            <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={grid.x} y={grid.y} width={grid.size} height={grid.size}><path d={`M${grid.size},0H0V${grid.size}`} fill="none" stroke="var(--paper)" strokeWidth="3" /></pattern>
           </defs>
           <path className="island-fill" d={terrain} />
           <foreignObject x="0" y="0" width={world.width} height={world.height} clipPath={`url(#${id}-land)`}><Contours variant={hash(day) % 100} frameRate={30} scale={3} /></foreignObject>
