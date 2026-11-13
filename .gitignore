@@ -2,6 +2,7 @@ node_modules/
 dist/
 .content/
 src/generated/
+public/island-assets/
 playwright-report/
 test-results/
 .env

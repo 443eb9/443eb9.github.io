@@ -5,6 +5,7 @@ import { Contours, Corners, NoiseField } from './Fields'
 import { hash, PAGE_SIZE } from './terrain'
 import { cardLayout, connectorBand, islandLayouts, ISLAND_OUTLINE, logGrid } from './log-layout'
 import { ISLAND_DURATION, labelBlink } from './log-animation'
+import { islandPath } from './island-content'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
@@ -96,6 +97,7 @@ function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, i
     </svg>
     {placement && <motion.span className="connector-endpoint" style={{ left: frontX, top: frontY }} aria-hidden="true" />}
     <motion.article ref={cardRef} id="island-card" className="island-card" aria-live="polite" style={{ clipPath, left: placement ? placement.left * unit : 0, top: placement ? placement.top * unit : 0, visibility: placement ? 'visible' : 'hidden' }} aria-label={island.title}>
+      <a className="card-open" href={islandPath(island.id)} aria-label={`阅读 ${island.title}`} />
       <span className="card-caption">// Island</span>
       <div className="card-heading"><h1>{island.title}</h1></div>
       <button type="button" className="close-card" aria-label="关闭岛屿卡片" onClick={onClose}><svg className="card-pixels" viewBox="0 0 30 30" aria-hidden="true"><path d="M0 0h10v10H0ZM20 0h10v10H20ZM10 10h10v10H10ZM20 20h10v10H20Z" /></svg></button>

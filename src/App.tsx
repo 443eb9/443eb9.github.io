@@ -1,6 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react'
 import { Home } from './Home'
 import { Log } from './Log'
+import { Island } from './Island'
+import islands from './generated/islands.json'
+import { islandId } from './island-content'
 
 const WIPE = { duration: 0.65, width: 8, widthScale: 10, steps: 128 } as const
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
@@ -18,7 +21,8 @@ function pageLocation(url: Pick<Location, 'pathname' | 'search' | 'hash'>, key: 
 }
 
 function Page({ path }: { path: string }) {
-  return path === '/' ? <Home /> : path === '/log' ? <Log /> : <main className="missing"><h1>404 · 这片海域等待探索</h1><a className="frame-button" href="/">返回群岛</a></main>
+  const id = islandId(path)
+  return path === '/' ? <Home /> : path === '/log' ? <Log /> : id !== null ? <Island id={id} /> : <main className="missing"><h1>404 · 这片海域等待探索</h1><a className="frame-button" href="/">返回群岛</a></main>
 }
 
 export function App() {
@@ -65,7 +69,8 @@ export function App() {
 
   useEffect(() => {
     const page = entering ?? current
-    document.title = page.path === '/' ? 'Crepuscular Archipelago · 443eb9#C' : page.path === '/log' ? '日志 · Crepuscular Archipelago' : '404 · Crepuscular Archipelago'
+    const island = islands.find(item => item.id === islandId(page.path))
+    document.title = island ? `${island.title} · Crepuscular Archipelago` : page.path === '/' ? 'Crepuscular Archipelago · 443eb9#C' : page.path === '/log' ? '日志 · Crepuscular Archipelago' : '404 · Crepuscular Archipelago'
     if (!entering) root.current?.querySelector<HTMLElement>('[data-page-view]')?.focus({ preventScroll: true })
   }, [current, entering])
 

@@ -31,13 +31,15 @@ jobs:
           persist-credentials: false
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            /islands/**/*.md
+            /islands/
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          ISLAND_ENCRYPTION_KEY: ${{ secrets.ISLAND_ENCRYPTION_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
