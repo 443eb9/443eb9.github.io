@@ -3,7 +3,7 @@ import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, use
 import islands from './generated/islands.json'
 import { Contours, Corners, NoiseField } from './Fields'
 import { hash, PAGE_SIZE } from './terrain'
-import { cardLayout, connectorBand, islandLayout, logGrid } from './log-layout'
+import { cardLayout, connectorBand, islandLayout, ISLAND_OUTLINE, logGrid } from './log-layout'
 
 const CARD_TIMING = { connector: 0.4, reveal: 0.32 } as const
 const SWEEP_EASE = [0.22, 1, 0.36, 1] as const
@@ -154,14 +154,27 @@ export function Log() {
         <svg className="terrain-map" viewBox={`0 0 ${world.width} ${world.height}`} preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <clipPath id={`${id}-land`}><path d={terrain} /></clipPath>
+            {activeLayout && <>
+              <clipPath id={`${id}-selected`}><path d={activeLayout.shape} /></clipPath>
+              <filter id={`${id}-outline`} filterUnits="userSpaceOnUse" x={activeLayout.bounds.left - 1} y={activeLayout.bounds.top - 1} width={activeLayout.bounds.right - activeLayout.bounds.left + 2} height={activeLayout.bounds.bottom - activeLayout.bounds.top + 2} colorInterpolationFilters="sRGB">
+                <feMorphology in="SourceAlpha" operator="dilate" radius={ISLAND_OUTLINE.gap + ISLAND_OUTLINE.width} result="outer" />
+                <feMorphology in="SourceAlpha" operator="dilate" radius={ISLAND_OUTLINE.gap} result="inner" />
+                <feComposite in="outer" in2="inner" operator="out" result="ring" />
+                <feFlood floodColor="var(--blue)" />
+                <feComposite in2="ring" operator="in" />
+              </filter>
+            </>}
             <pattern id={`${id}-grid`} patternUnits="userSpaceOnUse" x={grid.x} y={grid.y} width={grid.size} height={grid.size}><path d={`M${grid.size},0H0V${grid.size}`} fill="none" stroke="var(--paper)" strokeWidth="1.5" /></pattern>
           </defs>
           <path className="island-fill" d={terrain} />
           <foreignObject x="0" y="0" width={world.width} height={world.height} clipPath={`url(#${id}-land)`}><Contours variant={hash(day) % 100} frameRate={30} scale={3} /></foreignObject>
-          {activeLayout && <path className="selected-land" d={activeLayout.shape} fill="var(--blue)" />}
           <rect className="terrain-grid" width={world.width} height={world.height} fill={`url(#${id}-grid)`} />
           {layouts.flatMap((layout, index) => index === activeIndex ? [] : layout.cells.map(([x, y]) => <rect key={`${index}:${x}:${y}`} className="land-cell" x={layout.left + x * grid.size + 1} y={layout.top + y * grid.size + 1} width={grid.size - 2} height={grid.size - 2} fill="none" stroke="var(--blue)" strokeWidth="0.7" />))}
-          {activeLayout && <g fill="none"><path d={activeLayout.border} stroke="var(--blue)" strokeWidth="14" /><path d={activeLayout.border} stroke="var(--paper)" strokeWidth="6" /></g>}
+          {activeLayout && <>
+            <path className="selected-outline" d={activeLayout.shape} fill="var(--blue)" filter={`url(#${id}-outline)`} />
+            <path className="selected-land" d={activeLayout.shape} fill="var(--blue)" />
+            <rect className="selected-grid" width={world.width} height={world.height} fill={`url(#${id}-grid)`} clipPath={`url(#${id}-selected)`} />
+          </>}
         </svg>
         {visible.map((island, i) => <IslandTile key={island.id} island={island} index={i} layout={layouts[i]} unit={unit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}
       </div>

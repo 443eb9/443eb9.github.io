@@ -49,6 +49,22 @@ test('world grid, hover colors, card graphics and regular description text match
   await expect(card).toBeVisible()
   await expect.poll(async () => inset(await card.evaluate(element => getComputedStyle(element).clipPath)).right).toBe(-10)
   await expect(card).toHaveCSS('box-shadow', 'none')
+  await expect(page.locator('.directory-toggle')).toHaveCSS('box-shadow', 'none')
+  await expect(page.locator('.log-background')).toHaveCSS('background-color', 'rgb(240, 240, 240)')
+  expect(Number(await page.locator('.log-background .noise-field').evaluate(element => getComputedStyle(element).opacity))).toBeCloseTo(133 / 255, 5)
+  const selection = await page.locator('.terrain-map').evaluate(element => {
+    const outline = element.querySelector('.selected-outline')!
+    const land = element.querySelector('.selected-land')!
+    const filter = element.querySelector('filter')!
+    return { outline: outline.getAttribute('d'), land: land.getAttribute('d'),
+      radii: Array.from(filter.querySelectorAll('feMorphology'), item => item.getAttribute('radius')),
+      gridLast: element.lastElementChild!.classList.contains('selected-grid'),
+      gridColor: getComputedStyle(element.querySelector('pattern path')!).stroke }
+  })
+  expect(selection.outline).toBe(selection.land)
+  expect(selection.radii).toEqual(['9', '4'])
+  expect(selection.gridLast).toBe(true)
+  expect(selection.gridColor).toBe('rgb(246, 246, 246)')
   expect(await page.locator('.directory-marker').evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
   await expect(page.locator('.terrain-map .contour-field path').first()).toHaveCSS('stroke-width', '2.5px')
   await expect(card.locator('.card-description')).toHaveCSS('font-weight', '400')

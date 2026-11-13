@@ -1,5 +1,7 @@
 import { hash, islandPosition, islandShape } from './terrain.ts'
 
+export const ISLAND_OUTLINE = { gap: 4, width: 5 } as const
+
 export function connectorBand(start: { x: number; y: number }, end: { x: number; y: number }, progress: number, unit = 1) {
   const dx = end.x - start.x
   const dy = end.y - start.y
@@ -66,18 +68,12 @@ export function islandLayout(index: number, day: string, id: string, width: numb
   const top = grid.y + Math.round((position.y / 100 * height - grid.size * 2.5 - grid.y) / grid.size) * grid.size
   const cells = islandShape(hash(`${day}:${id}`))
   const shape = cells.map(([x, y]) => `M${left + x * grid.size},${top + y * grid.size}h${grid.size}v${grid.size}h${-grid.size}Z`).join('')
-  const occupied = new Set(cells.map(([x, y]) => `${x},${y}`))
-  const border = cells.flatMap(([x, y]) => [
-    occupied.has(`${x},${y - 1}`) ? '' : `M${left + x * grid.size},${top + y * grid.size}h${grid.size}`,
-    occupied.has(`${x + 1},${y}`) ? '' : `M${left + (x + 1) * grid.size},${top + y * grid.size}v${grid.size}`,
-    occupied.has(`${x},${y + 1}`) ? '' : `M${left + x * grid.size},${top + (y + 1) * grid.size}h${grid.size}`,
-    occupied.has(`${x - 1},${y}`) ? '' : `M${left + x * grid.size},${top + y * grid.size}v${grid.size}`,
-  ]).join('')
+  const outlineSize = ISLAND_OUTLINE.gap + ISLAND_OUTLINE.width
   const bounds = {
-    left: left + Math.min(...cells.map(([x]) => x)) * grid.size - 7,
-    top: top + Math.min(...cells.map(([, y]) => y)) * grid.size - 7,
-    right: left + (Math.max(...cells.map(([x]) => x)) + 1) * grid.size + 7,
-    bottom: top + (Math.max(...cells.map(([, y]) => y)) + 1) * grid.size + 7,
+    left: left + Math.min(...cells.map(([x]) => x)) * grid.size - outlineSize,
+    top: top + Math.min(...cells.map(([, y]) => y)) * grid.size - outlineSize,
+    right: left + (Math.max(...cells.map(([x]) => x)) + 1) * grid.size + outlineSize,
+    bottom: top + (Math.max(...cells.map(([, y]) => y)) + 1) * grid.size + outlineSize,
   }
-  return { left, top, cells, shape, border, bounds, center: { x: left + grid.size * 2.5, y: top + grid.size * 2.5 } }
+  return { left, top, cells, shape, bounds, center: { x: left + grid.size * 2.5, y: top + grid.size * 2.5 } }
 }

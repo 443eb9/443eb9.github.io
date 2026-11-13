@@ -113,11 +113,12 @@ button:disabled { cursor: default; }
 .frame-button:hover::before, .frame-button:focus-visible::before { transform: scaleX(1); }
 .notice { position: absolute; right: 20%; bottom: 18px; font-size: 18px; z-index: 5; }
 
-.log-background { position: absolute; inset: 0; background: var(--paper); }
+.log-background { position: absolute; inset: 0; background: #f0f0f0; }
+.log-background .noise-field { opacity: calc(133 / 255); }
 .log-header { position: absolute; top: 2.55%; left: 2.8%; right: 3%; z-index: 12; pointer-events: none; }
 .log-header > * { pointer-events: auto; }
 .directory { position: relative; }
-.directory-toggle { display: flex; align-items: center; gap: calc(12 * var(--u)); background: var(--blue); color: var(--paper); border: calc(1 * var(--u)) solid var(--blue); padding: calc(4 * var(--u)) calc(12 * var(--u)); font-size: calc(41.667 * var(--u)); line-height: 1; box-shadow: calc(8 * var(--u)) calc(7 * var(--u)) 0 var(--gray); }
+.directory-toggle { display: flex; align-items: center; gap: calc(12 * var(--u)); background: var(--blue); color: var(--paper); border: calc(1 * var(--u)) solid var(--blue); padding: calc(4 * var(--u)) calc(12 * var(--u)); font-size: calc(41.667 * var(--u)); line-height: 1; }
 .hamburger { width: calc(40 * var(--u)); height: calc(31 * var(--u)); background: repeating-linear-gradient(180deg, var(--paper) 0 calc(3 * var(--u)), transparent calc(3 * var(--u)) calc(14 * var(--u))); }
 .directory-marker { position: absolute; left: 0; top: calc(68 * var(--u)); width: calc(36 * var(--u)); height: calc(79 * var(--u)); background: var(--blue); pointer-events: none; }
 .directory-marker::after { content: ''; position: absolute; left: 0; top: calc(94 * var(--u)); width: calc(18 * var(--u)); height: calc(18 * var(--u)); background: inherit; }
