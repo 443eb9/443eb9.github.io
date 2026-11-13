@@ -30,11 +30,11 @@ test('world grid, hover colors, card graphics and regular description text match
       expect(difference).toBe(0)
     }
     await expect(page.locator('.terrain-map .contour-field')).toHaveCount(1)
-    const painted = await page.locator('.noise-field').evaluate(element => {
-      const canvas = element as HTMLCanvasElement
-      return canvas.getContext('2d')!.getImageData(0, 0, 64, 64).data.some((value, index) => index % 4 === 3 && value > 0)
+    const contextReady = await page.locator('.noise-field').evaluate(element => {
+      const context = (element as HTMLCanvasElement).getContext('webgl2')!
+      return Boolean(context) && !context.isContextLost()
     })
-    expect(painted).toBe(true)
+    expect(contextReady).toBe(true)
     await page.locator('.island-hit').nth(3).hover()
     await expect(page.locator('.island-fill')).toHaveCSS('fill', 'rgb(211, 211, 211)')
     await expect(page.locator('.log-background')).toHaveCSS('transform', 'none')

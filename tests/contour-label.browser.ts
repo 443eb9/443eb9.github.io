@@ -4,6 +4,7 @@ test('contour seams have matching tangents and island labels grow on one line', 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/log/')
   await page.evaluate(() => document.fonts.ready)
+  await expect(page.locator('.contour-field path').first()).toHaveAttribute('d', /^M/)
   const seams = await page.locator('.contour-field path').evaluateAll(elements => elements.flatMap(element =>
     element.getAttribute('d')!.split('Z').filter(Boolean).map(ring => {
       const [move, ...curves] = ring.split('Q')

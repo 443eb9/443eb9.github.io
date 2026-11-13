@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react'
-import { animate, motion, useMotionValue, useTransform } from 'motion/react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react'
 import { Home } from './Home'
 import { Log } from './Log'
 
-const WIPE = { duration: 0.65, width: 8, widthScale: 10 } as const
+const WIPE = { duration: 0.65, width: 8, widthScale: 10, steps: 128 } as const
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
 
 function subscribeReducedMotion(onChange: () => void) {
@@ -25,15 +24,13 @@ function Page({ path }: { path: string }) {
 export function App() {
   const root = useRef<HTMLDivElement>(null)
   const sequence = useRef(0)
+  const incomingView = useRef<HTMLDivElement>(null)
+  const wipeBar = useRef<HTMLDivElement>(null)
   const reduced = useSyncExternalStore(subscribeReducedMotion, () => window.matchMedia(REDUCED_MOTION).matches)
   const [current, setCurrent] = useState(() => pageLocation(window.location, 0))
   const [requested, setRequested] = useState(current)
   const [entering, setEntering] = useState<PageLocation | null>(null)
   const [oldScroll, setOldScroll] = useState(0)
-  const progress = useMotionValue(0)
-  const reveal = useTransform(progress, value => `inset(0 ${(100 + WIPE.width) * (1 - value)}% 0 0)`)
-  const barLeft = useTransform(progress, value => `${-WIPE.width + (100 + WIPE.width) * value}vw`)
-  const barWidth = useTransform(progress, value => `${WIPE.width * (1 + (WIPE.widthScale - 1) * value ** 2)}vw`)
 
   useEffect(() => {
     const restore = () => setRequested(pageLocation(window.location, ++sequence.current))
@@ -46,24 +43,24 @@ export function App() {
     setOldScroll(window.scrollY)
     window.scrollTo(0, 0)
     if (reduced) setCurrent(requested)
-    else {
-      progress.set(0)
-      setEntering(requested)
-    }
-  }, [requested, current.url, entering, reduced, progress])
+    else setEntering(requested)
+  }, [requested, current.url, entering, reduced])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!entering) return
-    const playback = animate(progress, 1, {
-      duration: reduced ? 0 : WIPE.duration,
-      ease: [0.65, 0, 0.35, 1],
-      onComplete: () => {
-        setCurrent(entering)
-        setEntering(null)
-      },
-    })
-    return () => playback.stop()
-  }, [entering, reduced, progress])
+    const options: KeyframeAnimationOptions = { duration: reduced ? 0 : WIPE.duration * 1000, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'both' }
+    const reveal = incomingView.current!.animate([{ clipPath: `inset(0 ${(100 + WIPE.width)}% 0 0)` }, { clipPath: 'inset(0 0% 0 0)' }], options)
+    const band = wipeBar.current!.animate(Array.from({ length: WIPE.steps + 1 }, (_, step) => {
+      const progress = step / WIPE.steps
+      return { offset: progress, transform: `translateX(${-WIPE.width + (100 + WIPE.width) * progress}vw) scaleX(${1 + (WIPE.widthScale - 1) * progress ** 2})` }
+    }), options)
+    reveal.startTime = band.startTime = document.timeline.currentTime
+    reveal.onfinish = () => {
+      setCurrent(entering)
+      setEntering(null)
+    }
+    return () => { reveal.onfinish = null; reveal.cancel(); band.cancel() }
+  }, [entering, reduced])
 
   useEffect(() => {
     const page = entering ?? current
@@ -90,10 +87,10 @@ export function App() {
   return <div ref={root} className="page-router" onClick={navigate}>
     {[current, ...(entering ? [entering] : [])].map(page => {
       const incoming = page.key === entering?.key
-      return <motion.div key={page.key} data-page-view className={`page-view${entering ? incoming ? ' page-incoming' : ' page-outgoing' : ''}`} tabIndex={-1} inert={Boolean(entering)} aria-hidden={entering ? true : undefined} style={incoming ? { clipPath: reveal } : undefined}>
+      return <div key={page.key} ref={incoming ? incomingView : undefined} data-page-view className={`page-view${entering ? incoming ? ' page-incoming' : ' page-outgoing' : ''}`} tabIndex={-1} inert={Boolean(entering)} aria-hidden={entering ? true : undefined} style={incoming ? { clipPath: `inset(0 ${100 + WIPE.width}% 0 0)` } : undefined}>
         <div className="page-content" style={entering && !incoming ? { transform: `translateY(${-oldScroll}px)` } : undefined}><Page path={page.path} /></div>
-      </motion.div>
+      </div>
     })}
-    {entering && <motion.div className="page-wipe" style={{ width: barWidth, left: barLeft }} aria-hidden="true" />}
+    {entering && <div ref={wipeBar} className="page-wipe" style={{ width: `${WIPE.width}vw`, transform: `translateX(${-WIPE.width}vw)` }} aria-hidden="true" />}
   </div>
 }

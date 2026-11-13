@@ -1,13 +1,9 @@
-import { createSeaHalftone } from './sea-halftone.ts'
-
 export type FieldPointer = { x: number; y: number }
 export type NoiseSample = (x: number, y: number, z: number) => number
 
 type Brush = { offsets: Int32Array; colors: Uint32Array; radius: number }
 
-export function createHalftone(image: ImageData, noise: NoiseSample, kind: 'canine' | 'sea', unit: number): (time: number, pointer: FieldPointer) => void {
-  if (kind === 'sea') return createSeaHalftone(image, noise, unit)
-
+export function createHalftone(image: ImageData, noise: NoiseSample, unit: number): (time: number, pointer: FieldPointer) => void {
   const { width, height, data } = image
   const pixels = new Uint32Array(data.buffer, data.byteOffset, data.byteLength / 4)
   const spacing = 6 * unit

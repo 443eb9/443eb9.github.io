@@ -1,5 +1,5 @@
 import { type CSSProperties, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { animate, AnimatePresence, motion, useDragControls, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import { animate, AnimatePresence, motion, type MotionValue, useDragControls, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from 'motion/react'
 import islands from './generated/islands.json'
 import { Contours, Corners, NoiseField } from './Fields'
 import { hash, PAGE_SIZE } from './terrain'
@@ -20,8 +20,15 @@ function IslandTile({ island, index, layout, unit, selected, onSelect }: { islan
   </div>
 }
 
-function IslandSelection({ island, layout, world, unit, index, onClose }: { island: Island; layout: Pick<IslandLayout, 'center' | 'bounds'>; world: { width: number; height: number }; unit: number; index: number; onClose: () => void }) {
+function IslandSelection({ island, layout: mapLayout, world, unit, panX, panY, index, onClose }: { island: Island; layout: IslandLayout; world: { width: number; height: number }; unit: number; panX: MotionValue<number>; panY: MotionValue<number>; index: number; onClose: () => void }) {
   const reduced = useReducedMotion()
+  const [pan, setPan] = useState(() => ({ x: panX.get(), y: panY.get() }))
+  useMotionValueEvent(panX, 'change', x => setPan(previous => ({ ...previous, x })))
+  useMotionValueEvent(panY, 'change', y => setPan(previous => ({ ...previous, y })))
+  const layout = {
+    center: { x: mapLayout.center.x + pan.x / unit, y: mapLayout.center.y + pan.y / unit },
+    bounds: { left: mapLayout.bounds.left + pan.x / unit, top: mapLayout.bounds.top + pan.y / unit, right: mapLayout.bounds.right + pan.x / unit, bottom: mapLayout.bounds.bottom + pan.y / unit },
+  }
   const cardRef = useRef<HTMLElement>(null)
   const filterId = `${useId().replaceAll(':', '')}-connector-colors`
   const [cardSize, setCardSize] = useState<{ width: number; height: number } | null>(null)
@@ -93,7 +100,6 @@ export function Log() {
   const dragged = useRef(false)
   const panX = useMotionValue(0)
   const panY = useMotionValue(0)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
   const [size, setSize] = useState({ width: window.innerWidth, height: Math.max(window.innerHeight, window.innerWidth <= 800 ? 680 : 540) })
   const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10))
   const count = Math.ceil(islands.length / PAGE_SIZE)
@@ -122,10 +128,6 @@ export function Log() {
   const activeIndex = visible.findIndex(island => island.id === selected)
   const active = visible[activeIndex]
   const activeLayout = layouts[activeIndex]
-  const selectedLayout = activeLayout && {
-    center: { x: activeLayout.center.x + pan.x / unit, y: activeLayout.center.y + pan.y / unit },
-    bounds: { left: activeLayout.bounds.left + pan.x / unit, top: activeLayout.bounds.top + pan.y / unit, right: activeLayout.bounds.right + pan.x / unit, bottom: activeLayout.bounds.bottom + pan.y / unit },
-  }
   const shownPages = Math.min(narrow ? 3 : 4, count)
   const pageStart = Math.max(1, Math.min(windowStart, count - shownPages + 1))
   const pageNumbers = Array.from({ length: shownPages }, (_, i) => pageStart + i)
@@ -136,7 +138,6 @@ export function Log() {
     const y = Math.max(dragBounds.top, Math.min(0, dragBounds.bottom))
     panX.set(x)
     panY.set(y)
-    setPan({ x, y })
   }, [page, day, dragBounds.left, dragBounds.right, dragBounds.top, dragBounds.bottom, panX, panY])
 
   useLayoutEffect(() => {
@@ -197,7 +198,7 @@ export function Log() {
       if ((event.target as Element).closest('.selection')) return
       dragControls.start(event)
     }} onClickCapture={event => { if (dragged.current) { event.preventDefault(); event.stopPropagation() } }}>
-      <motion.div className="map-items" drag dragControls={dragControls} dragListener={false} dragConstraints={dragBounds} dragElastic={0} dragMomentum={false} style={{ x: panX, y: panY }} onDragStart={() => { dragged.current = true }} onDrag={() => setPan({ x: panX.get(), y: panY.get() })}>
+      <motion.div className="map-items" drag dragControls={dragControls} dragListener={false} dragConstraints={dragBounds} dragElastic={0} dragMomentum={false} style={{ x: panX, y: panY }} onDragStart={() => { dragged.current = true }}>
         <svg className="terrain-map" style={{ left: mapArea.left * unit, top: mapArea.top * unit, width: (mapArea.right - mapArea.left) * unit, height: (mapArea.bottom - mapArea.top) * unit }} viewBox={`${mapArea.left} ${mapArea.top} ${mapArea.right - mapArea.left} ${mapArea.bottom - mapArea.top}`} preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <clipPath id={`${id}-land`}><path d={terrain} /></clipPath>
@@ -225,7 +226,7 @@ export function Log() {
         </svg>
         {visible.map((island, i) => <IslandTile key={island.id} island={island} index={i} layout={layouts[i]} unit={unit} selected={selected === island.id} onSelect={() => setSelected(value => value === island.id ? null : island.id)} />)}
       </motion.div>
-      <AnimatePresence>{active && selectedLayout && <IslandSelection key={active.id} island={active} layout={selectedLayout} world={world} unit={unit} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
+      <AnimatePresence>{active && activeLayout && <IslandSelection key={active.id} island={active} layout={activeLayout} world={world} unit={unit} panX={panX} panY={panY} index={(page - 1) * PAGE_SIZE + activeIndex + 1} onClose={() => setSelected(null)} />}</AnimatePresence>
     </div>
     <footer className="log-footer flex items-end justify-between"><span className="page-coordinate">ISLANDS {String((page - 1) * PAGE_SIZE + 1).padStart(2, '0')}—{String(Math.min(page * PAGE_SIZE, islands.length)).padStart(2, '0')} / {islands.length}</span>
       <nav className="pagination flex items-center" aria-label="日志分页">

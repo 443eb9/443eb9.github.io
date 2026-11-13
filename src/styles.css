@@ -30,7 +30,7 @@ button:disabled { cursor: default; }
 .page-incoming, .page-outgoing { position: fixed; inset: 0; overflow: hidden; }
 .page-outgoing { z-index: 1000; }
 .page-incoming { z-index: 1001; }
-.page-wipe { position: fixed; top: 0; bottom: 0; z-index: 1002; background: var(--blue); pointer-events: none; }
+.page-wipe { position: fixed; left: 0; top: 0; bottom: 0; z-index: 1002; background: var(--blue); transform-origin: left center; pointer-events: none; }
 .scene { width: 100%; min-height: 100svh; }
 .home, .log { height: 100svh; min-height: 540px; }
 .home { background: #f0f0f0; }
@@ -41,7 +41,7 @@ button:disabled { cursor: default; }
 .layer-four { z-index: 3; }
 .layer-five { z-index: 4; }
 .layer-five a, .layer-five button { pointer-events: auto; }
-.noise-field, .contour-field { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.sea-field, .noise-field, .contour-field { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .contour-field path { vector-effect: non-scaling-stroke; stroke-width: calc(2.75 * var(--u)); }
 .canine { position: absolute; left: 23.906%; top: -1.877%; height: 105.03%; width: 53.493%; background: url('/images/canine.png') center / contain no-repeat; }
 .canine .noise-field { mask: url('/images/canine.png') center / contain no-repeat; }
