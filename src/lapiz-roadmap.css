@@ -90,12 +90,13 @@
   line-height: .88;
   letter-spacing: -.055em;
 }
-.lapiz-hero h1 > span {
+.lapiz-hero h1 > a, .lapiz-hero h1 > span {
   display: flex;
   align-items: center;
   padding: clamp(14px, 2.5vw, 36px);
   background: #f0f0f0;
 }
+.lapiz-hero h1 > a:is(:hover, :focus-visible) { text-decoration: underline; text-underline-offset: .12em; }
 .lapiz-hero .lapiz-subtitle {
   padding-block: clamp(10px, 1vw, 16px);
   font-size: clamp(20px, 3.2vw, 46px);

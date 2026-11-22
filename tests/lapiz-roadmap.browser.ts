@@ -56,7 +56,9 @@ test('roadmap opens directly and filters tasks without removing milestones', asy
   const response = await page.goto('/lapiz/roadmap/')
   expect(response?.status()).toBe(200)
   expect(await response?.text()).toContain('<title>Lapiz 路线图 · Crepuscular Archipelago</title>')
-  await expect(page.getByRole('heading', { name: 'Lapiz 开发路线图' })).toBeVisible()
+  const heading = page.getByRole('heading', { name: 'Lapiz 开发路线图' })
+  await expect(heading).toBeVisible()
+  await expect(heading.getByRole('link', { name: 'Lapiz', exact: true })).toHaveAttribute('href', 'https://github.com/lapiz-rs/lapiz')
 
   for (const stage of roadmap) {
     const section = page.getByRole('region', { name: stage.title })

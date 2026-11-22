@@ -214,7 +214,7 @@ export function LapizRoadmap() {
     </header>
 
     <div className="lapiz-hero">
-      <h1><span lang="en"><RoadmapText>Lapiz</RoadmapText></span> <span className="lapiz-subtitle"><RoadmapText>{labels.subtitle}</RoadmapText></span></h1>
+      <h1><a href="https://github.com/lapiz-rs/lapiz" lang="en"><RoadmapText>Lapiz</RoadmapText></a> <span className="lapiz-subtitle"><RoadmapText>{labels.subtitle}</RoadmapText></span></h1>
     </div>
 
     {!roadmap ? <p className="lapiz-empty" role={roadmap === null ? 'alert' : 'status'}>{roadmap === null ? labels.error : labels.loading}</p> : <>
