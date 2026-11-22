@@ -1,0 +1,134 @@
+.lapiz-roadmap.scene {
+  --lapiz-ink: #252e56;
+  --lapiz-muted: #4e5876;
+  --lapiz-line: #c4cbeb;
+  isolation: isolate;
+  padding-inline: max(clamp(16px, 4vw, 64px), calc((100% - 1440px) / 2));
+  padding-block: 20px 32px;
+}
+.lapiz-backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--paper); }
+.lapiz-backdrop .contour-field { color: var(--gray); stroke-width: 2px; }
+.lapiz-square-cluster, .lapiz-square-cluster i { position: absolute; }
+.lapiz-square-cluster i { aspect-ratio: 1; transform: translate(-50%, -50%); background: var(--blue); }
+
+.lapiz-header, .lapiz-toolbar, .lapiz-footer { position: relative; }
+.lapiz-header::after, .lapiz-toolbar::before, .lapiz-toolbar::after, .lapiz-footer::before {
+  content: '';
+  position: absolute;
+  inset-inline: -9px;
+  height: 18px;
+  background:
+    linear-gradient(var(--paper), var(--paper)) left 2px center / 14px 14px no-repeat,
+    linear-gradient(var(--paper), var(--paper)) right 2px center / 14px 14px no-repeat,
+    linear-gradient(var(--blue), var(--blue)) left / 18px 18px no-repeat,
+    linear-gradient(var(--blue), var(--blue)) right / 18px 18px no-repeat;
+  pointer-events: none;
+}
+.lapiz-header::after { bottom: -10px; }
+.lapiz-toolbar::before { top: -9px; }
+.lapiz-toolbar::after { bottom: -9px; }
+.lapiz-footer::before { top: -10px; }
+
+.lapiz-header, .lapiz-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 20px;
+  min-height: 50px;
+  font-size: 15px;
+  letter-spacing: .08em;
+}
+.lapiz-header { border-bottom: 2px dashed var(--blue); }
+.lapiz-header > span { display: flex; align-items: center; gap: 10px; }
+.lapiz-header i { width: 10px; height: 10px; background: currentColor; }
+.lapiz-header a { padding: 6px 0; }
+.lapiz-header a:hover { text-decoration: underline; text-underline-offset: .25em; }
+
+.lapiz-hero { padding-block: clamp(28px, 5vw, 76px); }
+.lapiz-hero h1 {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--blue);
+  font-size: clamp(48px, 10vw, 144px);
+  line-height: .88;
+  letter-spacing: -.055em;
+}
+.lapiz-hero h1 > span {
+  display: flex;
+  align-items: center;
+  padding: clamp(14px, 2.5vw, 36px);
+  background: #f0f0f0;
+}
+.lapiz-hero .lapiz-subtitle {
+  padding-block: clamp(10px, 1vw, 16px);
+  font-size: clamp(20px, 3.2vw, 46px);
+  line-height: 1.2;
+  letter-spacing: .05em;
+  white-space: nowrap;
+}
+
+.lapiz-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  border-block: 1px dashed var(--blue);
+  padding-block: 12px;
+  margin-bottom: 26px;
+}
+.lapiz-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.lapiz-filters button { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px solid var(--lapiz-line); background: #fff; color: var(--lapiz-ink); }
+.lapiz-filters button:hover { border-color: var(--blue); }
+.lapiz-filters button[aria-pressed='true'] { color: #fff; border-color: var(--blue); background: var(--blue); }
+.lapiz-filter-count { font-size: .8em; font-variant-numeric: tabular-nums; }
+.lapiz-result { color: var(--lapiz-muted); font-size: 14px; }
+
+.lapiz-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 2vw, 28px); align-items: start; }
+.lapiz-stage { display: grid; gap: 16px; }
+.lapiz-stage-header { min-height: 156px; padding: 14px clamp(13px, 1.4vw, 22px) 16px; background: var(--blue); color: #fff; }
+.lapiz-stage-index { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; font-size: 13px; letter-spacing: .07em; }
+.lapiz-stage-index span:first-child::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 7px; background: currentColor; }
+.lapiz-stage h2 { font-size: clamp(23px, 2.2vw, 34px); line-height: 1.16; }
+.lapiz-codename { font-size: 15px; }
+.lapiz-stage-description { margin-top: 8px; font-size: 14px; }
+.lapiz-tasks { display: grid; gap: 16px; }
+.lapiz-task {
+  position: relative;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px clamp(13px, 1.4vw, 22px);
+  border: 1px solid var(--blue);
+  background: #fff;
+}
+.lapiz-task[data-status='completed'] { border-color: #fff; background: var(--blue); color: #fff; }
+.lapiz-task .tag-corner { width: 9px; height: 9px; border-width: 2px; }
+.lapiz-task .tag-corner-0, .lapiz-task .tag-corner-2 { left: -4px; border-right-width: 0; }
+.lapiz-task .tag-corner-1, .lapiz-task .tag-corner-3 { right: -4px; border-left-width: 0; }
+.lapiz-task .tag-corner-0, .lapiz-task .tag-corner-1 { top: -4px; border-bottom-width: 0; }
+.lapiz-task .tag-corner-2, .lapiz-task .tag-corner-3 { bottom: -4px; border-top-width: 0; }
+.lapiz-task h3 { font-size: 17px; line-height: 1.24; overflow-wrap: anywhere; }
+.lapiz-task p { margin-top: 5px; font-size: 14px; line-height: 1.48; overflow-wrap: anywhere; }
+.lapiz-task:not([data-status='completed']) p { color: var(--lapiz-muted); }
+.lapiz-status { display: inline-grid; place-items: center; width: 13px; height: 13px; border: 1px solid currentColor; color: var(--blue); }
+.lapiz-task .lapiz-status { margin-top: 3px; }
+.lapiz-status[data-status='completed'] { background: currentColor; }
+.lapiz-status[data-status='completed']::after { content: ''; width: 7px; height: 4px; border: solid #fff; border-width: 0 0 2px 2px; transform: translateY(-1px) rotate(-45deg); }
+.lapiz-status[data-status='in_progress'] { background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.lapiz-filters button[aria-pressed='true'] .lapiz-status, .lapiz-task[data-status='completed'] .lapiz-status { color: #fff; }
+.lapiz-filters button[aria-pressed='true'] .lapiz-status::after, .lapiz-task[data-status='completed'] .lapiz-status::after { border-color: var(--blue); }
+.lapiz-empty { padding: 15px; border: 1px solid var(--lapiz-line); background: #fff; color: var(--lapiz-muted); font-size: 14px; }
+.lapiz-footer { margin-top: 32px; border-top: 2px dashed var(--blue); }
+
+@media (max-width: 1050px) {
+  .lapiz-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .lapiz-stages { grid-template-columns: minmax(0, 1fr); }
+  .lapiz-stage-header { min-height: 0; }
+  .lapiz-filters button { min-height: 42px; }
+}

@@ -4,6 +4,7 @@ import { Log } from './Log'
 import { Island } from './Island'
 import { Metadata } from './Metadata'
 import { Neighbourhood } from './Neighbourhood'
+import { LapizRoadmap } from './LapizRoadmap'
 import islands from './generated/islands.json'
 import { islandId, islandRouteId } from './island-content'
 
@@ -27,6 +28,7 @@ function Page({ path, logPage, setLogPage }: { path: string; logPage: number; se
   if (path === '/log') return <Log page={logPage} setPage={setLogPage} />
   if (path === '/metadata') return <Metadata />
   if (path === '/neighbourhood') return <Neighbourhood />
+  if (path === '/lapiz/roadmap') return <LapizRoadmap />
 
   const id = islandId(path)
   return id !== null ? <Island id={id} /> : <main className="missing"><h1>404 · 这片海域等待探索</h1><a className="frame-button" href="/">返回群岛</a></main>
@@ -78,7 +80,7 @@ export function App() {
   useEffect(() => {
     const page = entering ?? current
     const island = islands.find(item => islandRouteId(item.id) === islandId(page.path))
-    const titles: Record<string, string> = { '/': 'Crepuscular Archipelago · 443eb9#C', '/log': '日志 · Crepuscular Archipelago', '/metadata': '元数据 · Crepuscular Archipelago', '/neighbourhood': '邻域 · Crepuscular Archipelago' }
+    const titles: Record<string, string> = { '/': 'Crepuscular Archipelago · 443eb9#C', '/log': '日志 · Crepuscular Archipelago', '/metadata': '元数据 · Crepuscular Archipelago', '/neighbourhood': '邻域 · Crepuscular Archipelago', '/lapiz/roadmap': 'Lapiz 路线图 · Crepuscular Archipelago' }
     document.title = island ? `${island.title} · Crepuscular Archipelago` : titles[page.path] ?? '404 · Crepuscular Archipelago'
     if (!entering) root.current?.querySelector<HTMLElement>('[data-page-view]')?.focus({ preventScroll: true })
   }, [current, entering])

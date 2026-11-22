@@ -1,0 +1,357 @@
+[
+  {
+    "version": "v0.1.0",
+    "codename": "Abies fabri",
+    "description": "首个完整可用的基础版本",
+    "tasks": [
+      {
+        "title": "端到端 GPU 瓦片画布与合成管线",
+        "description": "基于 wgpu 构建端到端 GPU 瓦片画布、渲染与合成管线。",
+        "status": "completed"
+      },
+      {
+        "title": "图层混合模式",
+        "description": "在 GPU 合成管线中支持多种常用图层混合模式。",
+        "status": "completed"
+      },
+      {
+        "title": "基本图层栈",
+        "description": "支持像素图层、图层组及基础图层栈管理操作。",
+        "status": "completed"
+      },
+      {
+        "title": "画布 MipMap 与线性滤波呈现",
+        "description": "通过多级 MipMap 与线性滤波实现不同缩放比例下的平滑画布显示。",
+        "status": "completed"
+      },
+      {
+        "title": "GPU 加速 ICC 色彩管理",
+        "description": "将 ICC 色彩配置文件直接编译生成 GPU 着色器，实现高精度实时色彩转换。",
+        "status": "completed"
+      },
+      {
+        "title": "多色彩模型可定制选色器",
+        "description": "支持 RGB、HSL、HSV、CIE Lab、OkLab 等多种色彩模型，并支持自定义面板布局。",
+        "status": "completed"
+      },
+      {
+        "title": "Shader Graph 节点编辑器",
+        "description": "基于 WESL/WGSL 的可视化节点编辑器，支持曲线、随机、循环、自定义表达式与函数子图。",
+        "status": "completed"
+      },
+      {
+        "title": "节点式可编程笔刷引擎",
+        "description": "由 Shader Graph 驱动的可编程笔刷引擎，支持笔刷描边实时预览。",
+        "status": "completed"
+      },
+      {
+        "title": "独立干净室 .abr 解析",
+        "description": "独立实现的 Adobe Photoshop .abr 笔刷文件解析器。",
+        "status": "completed"
+      },
+      {
+        "title": "Photoshop 笔刷引擎兼容",
+        "description": "兼容 Photoshop 笔刷参数与行为，桥接至节点式渲染管线。",
+        "status": "completed"
+      },
+      {
+        "title": "节点式可编程滤镜",
+        "description": "由 Shader Graph 驱动的 GPU 加速可编程图像滤镜系统。",
+        "status": "completed"
+      },
+      {
+        "title": "节点式可编程图层效果",
+        "description": "由 Shader Graph 驱动的可编程图层效果管线。",
+        "status": "completed"
+      },
+      {
+        "title": "基本输入平滑防抖稳定器",
+        "description": "提供基础笔迹采样平滑与防抖稳定处理。",
+        "status": "completed"
+      },
+      {
+        "title": "基础画笔工具",
+        "description": "支持压感与节点式笔刷引擎的核心绘画工具。",
+        "status": "completed"
+      },
+      {
+        "title": "基础油漆桶工具",
+        "description": "支持区域填充与缺口闭合的基础油漆桶工具。",
+        "status": "completed"
+      },
+      {
+        "title": "基础吸管工具",
+        "description": "支持从画布实时取色的吸管工具。",
+        "status": "completed"
+      },
+      {
+        "title": "选区工具集",
+        "description": "包含矩形、椭圆、自由套索、多边形套索与魔棒选区工具。",
+        "status": "completed"
+      },
+      {
+        "title": "变换工具集",
+        "description": "包含自由变换、透视变换与液化变换工具。",
+        "status": "in_progress"
+      },
+      {
+        "title": "画布操作工具",
+        "description": "包含画布平移、旋转、缩放与镜像交互工具。",
+        "status": "in_progress"
+      },
+      {
+        "title": ".lazuli 防崩溃瓦片工程格式",
+        "description": "基于 SQLite 的原生瓦片工程存档格式，降低异常崩溃导致文档损坏的风险。",
+        "status": "in_progress"
+      },
+      {
+        "title": ".lazuli 增量保存",
+        "description": "仅写入变更瓦片与数据以提升保存速度，桌面端已初步实现，正完善全平台支持。",
+        "status": "in_progress"
+      },
+      {
+        "title": "常规栅格图像导入与导出",
+        "description": "支持 PNG、JPG、AVIF 等常见栅格图像格式的导入与导出。",
+        "status": "completed"
+      },
+      {
+        "title": "可停靠多标签页 Dock 工作区",
+        "description": "支持面板自由停靠、分组与多标签页切换的工作区界面。",
+        "status": "completed"
+      },
+      {
+        "title": "自定义快捷键配置",
+        "description": "支持用户自定义全局动作与工具快捷键绑定。",
+        "status": "todo"
+      },
+      {
+        "title": "资产包系统",
+        "description": "统一管理笔刷、滤镜、效果与贴图等内置及外部资源包。",
+        "status": "completed"
+      },
+      {
+        "title": "撤销重做系统",
+        "description": "支持画布与文档操作的多步撤销与重做。",
+        "status": "completed"
+      },
+      {
+        "title": "Fluent 多语言国际化",
+        "description": "基于 Fluent 的多语言本地化。",
+        "status": "in_progress"
+      },
+      {
+        "title": "全平台跨平台构建基础",
+        "description": "同一套代码库覆盖 Windows、Linux、macOS 与 Android 平台。",
+        "status": "completed"
+      },
+      {
+        "title": "图层锁定功能",
+        "description": "在图层栈操作与各编辑工具中完整生效图层锁定保护。",
+        "status": "todo"
+      },
+      {
+        "title": "通道锁定功能",
+        "description": "在像素编辑工具中完整生效色彩与透明通道锁定保护。",
+        "status": "todo"
+      },
+      {
+        "title": "PSD 工程文件导入导出",
+        "description": "支持 Adobe Photoshop .psd 工程文件的导入与导出互操作。",
+        "status": "todo"
+      }
+    ]
+  },
+  {
+    "version": "近期规划",
+    "description": "从「能画」迈向「流畅、完整、顺手」",
+    "tasks": [
+      {
+        "title": "Photoshop 风格剪贴蒙版",
+        "description": "支持 Clipping Layer 剪贴蒙版，将上层内容限制在下层可见区域内。",
+        "status": "todo"
+      },
+      {
+        "title": "Krita 风格 Alpha 继承",
+        "description": "支持图层组内基于下层不透明度的 Alpha 继承混合方式。",
+        "status": "todo"
+      },
+      {
+        "title": "非破坏性透明蒙版图层",
+        "description": "通过独立透明蒙版子图层非破坏性地控制图层可见区域。",
+        "status": "todo"
+      },
+      {
+        "title": "非破坏性滤镜图层与滤镜蒙版",
+        "description": "支持随时可调、可开关的非破坏性滤镜图层与局部滤镜蒙版。",
+        "status": "todo"
+      },
+      {
+        "title": ".lazuli 文档自定义数据与兼容性",
+        "description": "支持自定义图层数据序列化以及文档格式的前后向兼容处理。",
+        "status": "todo"
+      },
+      {
+        "title": "图像合成器增量混合缓存",
+        "description": "在图层合成阶段按需增量构建与复用混合缓存，降低重绘开销。",
+        "status": "todo"
+      },
+      {
+        "title": "笔刷预览磁盘持久化缓存",
+        "description": "按资产 ID 将笔刷描边预览缓存至磁盘，加快面板加载速度。",
+        "status": "todo"
+      },
+      {
+        "title": "画布导航器 Dock",
+        "description": "提供全局缩略图预览与快速平移缩放定位的导航器面板。",
+        "status": "todo"
+      },
+      {
+        "title": "历史记录 Dock",
+        "description": "可视化展示撤销栈并支持快速跳转到任意历史状态。",
+        "status": "todo"
+      },
+      {
+        "title": "调色板 Dock",
+        "description": "支持色板管理、配色保存与快速取色的调色板面板。",
+        "status": "todo"
+      },
+      {
+        "title": "笔刷历史 Dock",
+        "description": "记录最近使用过的笔刷预设，方便在创作中快速切换。",
+        "status": "todo"
+      },
+      {
+        "title": "快捷操作面板",
+        "description": "提供可自定义的快捷操作与组合键面板（Quick Actions），提升无键盘或高效创作体验。",
+        "status": "todo"
+      }
+    ]
+  },
+  {
+    "version": "中期规划",
+    "description": "打造专业插画能力与差异化的可编程工作流",
+    "tasks": [
+      {
+        "title": "基于 Shader Graph 的全节点图层系统",
+        "description": "提供独立节点编辑面板，打破传统图层栈限制，支持完全自定义图层混合方式与执行顺序。",
+        "status": "todo"
+      },
+      {
+        "title": "笔刷引擎深度性能优化",
+        "description": "优化笔刷渲染、调度与大数据量描边性能，降低高分辨率画布延迟。",
+        "status": "todo"
+      },
+      {
+        "title": "矢量图层支持",
+        "description": "支持分辨率无关的矢量路径、几何图形与非破坏性矢量编辑。",
+        "status": "todo"
+      },
+      {
+        "title": "文字形状与排版",
+        "description": "文字不作为独立图层，而是作为矢量形状直接融入矢量图层统一编辑。",
+        "status": "todo"
+      },
+      {
+        "title": "绘画辅助尺",
+        "description": "提供对称尺、1 点 / 2 点 / 3 点透视尺等常见绘画辅助工具。",
+        "status": "todo"
+      },
+      {
+        "title": "画布参考图工具",
+        "description": "类似 Krita 的参考图工具，可在画布空间自由摆放、缩放并直接吸色。",
+        "status": "todo"
+      },
+      {
+        "title": "16-bit 浮点全管线色深",
+        "description": "支持全管线 FP16 高动态范围像素存储、混合与滤镜计算。",
+        "status": "todo"
+      },
+      {
+        "title": "HDR 显示输出支持",
+        "description": "支持在 HDR 显示器上准确呈现高动态范围画布内容。",
+        "status": "todo"
+      },
+      {
+        "title": "软打样预览",
+        "description": "支持目标色彩空间软打样预览，其中 CMYK 仅支持软打样预览，不支持直接编辑。",
+        "status": "todo"
+      },
+      {
+        "title": "直方图 Dock",
+        "description": "实时显示画布色彩与明度分布直方图，辅助调色与曝光判断。",
+        "status": "todo"
+      },
+      {
+        "title": "内置延时摄影 Dock 与视频导出",
+        "description": "低开销记录绘画过程，并在内置面板中预览与导出延时摄影视频。",
+        "status": "todo"
+      },
+      {
+        "title": "KRA 工程文件导入导出",
+        "description": "支持 Krita .kra 工程文件的导入与导出互操作。",
+        "status": "todo"
+      },
+      {
+        "title": "Procreate 笔刷兼容",
+        "description": "支持解析与导入 Procreate .brushset 笔刷包。",
+        "status": "todo"
+      },
+      {
+        "title": "Clip Studio Paint 笔刷兼容",
+        "description": "支持解析与导入 Clip Studio Paint .sut 笔刷文件。",
+        "status": "todo"
+      },
+      {
+        "title": "Krita 笔刷兼容",
+        "description": "支持解析与导入 Krita .kpp 笔刷预设。",
+        "status": "todo"
+      }
+    ]
+  },
+  {
+    "version": "远期愿景",
+    "description": "面向 2D/3D 协同、程序化材质与开放生态的长期探索",
+    "tasks": [
+      {
+        "title": "像素画支持",
+        "description": "提供 Pixel Perfect 等面向像素艺术创作的专用笔刷与画布能力。",
+        "status": "todo"
+      },
+      {
+        "title": "Blender 材质绘制集成",
+        "description": "与 Blender 深度联动，支持直接在 Lapiz 中绘制并同步 Blender 材质。",
+        "status": "todo"
+      },
+      {
+        "title": "Blender 3D 视口投射参考",
+        "description": "将 Blender 3D 视口画面实时投射到画布上作为绘画参考。",
+        "status": "todo"
+      },
+      {
+        "title": "内置滤镜资产与程序化生成节点库",
+        "description": "提供丰富的内置滤镜预设与程序化纹理生成节点库。",
+        "status": "todo"
+      },
+      {
+        "title": "无缝平铺与多通道 PBR 输出",
+        "description": "支持四方连续平铺及多通道 PBR 贴图输出，覆盖部分程序化材质生成工作流。",
+        "status": "todo"
+      },
+      {
+        "title": "Rust 原生插件 API 与扩展生态",
+        "description": "提供稳定的插件接口，支持直接使用 Rust 编写高性能扩展。",
+        "status": "todo"
+      },
+      {
+        "title": "移动端深度适配",
+        "description": "针对平板与触屏设备优化触控手势与轻量工作区交互体验。",
+        "status": "todo"
+      },
+      {
+        "title": "逐帧动画与时间轴 Dock",
+        "description": "引入时间轴面板与洋葱皮等基础逐帧动画创作能力。",
+        "status": "todo"
+      }
+    ]
+  }
+]

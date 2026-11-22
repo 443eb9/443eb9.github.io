@@ -9,7 +9,7 @@ try {
 }
 
 const html = await readFile('dist/index.html', 'utf8')
-for (const [path, title] of [['log', '日志'], ['metadata', '元数据'], ['neighbourhood', '邻域']]) {
+for (const [path, title] of [['log', '日志'], ['metadata', '元数据'], ['neighbourhood', '邻域'], ['lapiz/roadmap', 'Lapiz 路线图']]) {
   await mkdir(`dist/${path}`, { recursive: true })
   await writeFile(`dist/${path}/index.html`, html.replace('<title>Crepuscular Archipelago · 443eb9#C</title>', `<title>${title} · Crepuscular Archipelago</title>`))
 }
