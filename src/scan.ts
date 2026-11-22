@@ -35,7 +35,8 @@ export function settledGlyphs(length: number, elapsed: number) {
 export function nearbyCharacters(character: string) {
   const code = character.codePointAt(0)!
   const result: string[] = []
-  for (let next = Math.max(33, code - 64); next <= Math.min(255, code + 64); next++) {
+  const upperBound = code <= 255 ? 255 : 0x10ffff
+  for (let next = Math.max(33, code - 64); next <= Math.min(upperBound, code + 64); next++) {
     const candidate = String.fromCodePoint(next)
     if (next !== code && (next <= 126 || next >= 161) && /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(candidate)) result.push(candidate)
   }
