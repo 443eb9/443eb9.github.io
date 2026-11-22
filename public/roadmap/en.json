@@ -1,0 +1,290 @@
+{
+  "v0.1.0": {
+    "title": "v0.1.0",
+    "description": "First complete, usable release",
+    "tasks": {
+      "gpu-canvas": {
+        "title": "End-to-end GPU tiled canvas and compositing",
+        "description": "Build a GPU tiled canvas, rendering, and compositing pipeline with wgpu."
+      },
+      "layer-blending": {
+        "title": "Layer blend modes",
+        "description": "Support common layer blend modes in the GPU compositing pipeline."
+      },
+      "layer-stack": {
+        "title": "Basic layer stack",
+        "description": "Support pixel layers, layer groups, and basic layer stack operations."
+      },
+      "canvas-mipmaps": {
+        "title": "Canvas mipmaps and linear filtering",
+        "description": "Use mipmaps and linear filtering to keep the canvas smooth at different zoom levels."
+      },
+      "icc-color": {
+        "title": "GPU-accelerated ICC color management",
+        "description": "Compile ICC profiles directly into GPU shaders for precise real-time color conversion."
+      },
+      "color-picker": {
+        "title": "Customizable multi-model color picker",
+        "description": "Support RGB, HSL, HSV, CIE Lab, and OkLab, with a customizable panel layout."
+      },
+      "shader-graph": {
+        "title": "Shader Graph editor",
+        "description": "Provide a visual WESL/WGSL editor with curves, random values, loops, custom expressions, and function subgraphs."
+      },
+      "brush-engine": {
+        "title": "Programmable node-based brush engine",
+        "description": "Use Shader Graph to power brushes with real-time stroke previews."
+      },
+      "abr-parser": {
+        "title": "Clean-room .abr parser",
+        "description": "Provide an independent parser for Adobe Photoshop .abr brush files."
+      },
+      "photoshop-brushes": {
+        "title": "Photoshop brush engine compatibility",
+        "description": "Support Photoshop brush parameters and behavior in the node-based rendering pipeline."
+      },
+      "node-filters": {
+        "title": "Programmable node-based filters",
+        "description": "Use Shader Graph to run programmable image filters on the GPU."
+      },
+      "layer-effects": {
+        "title": "Programmable node-based layer effects",
+        "description": "Use Shader Graph to apply programmable layer effects."
+      },
+      "input-stabilizer": {
+        "title": "Basic stroke smoothing and stabilization",
+        "description": "Smooth input strokes and reduce jitter."
+      },
+      "brush-tool": {
+        "title": "Basic brush tool",
+        "description": "Provide core painting tools with pressure sensitivity and node-based brushes."
+      },
+      "fill-tool": {
+        "title": "Basic fill tool",
+        "description": "Fill regions and close gaps at their boundaries."
+      },
+      "eyedropper": {
+        "title": "Basic eyedropper",
+        "description": "Sample colors from the canvas in real time."
+      },
+      "selection-tools": {
+        "title": "Selection tools",
+        "description": "Provide rectangular, elliptical, freehand lasso, polygonal lasso, and magic wand selection tools."
+      },
+      "transform-tools": {
+        "title": "Transform tools",
+        "description": "Provide free, perspective, and liquify transforms."
+      },
+      "canvas-controls": {
+        "title": "Canvas controls",
+        "description": "Pan, rotate, zoom, and mirror the canvas."
+      },
+      "lazuli-format": {
+        "title": "Crash-resistant .lazuli tiled project format",
+        "description": "Use a native SQLite-based tiled project format to reduce the risk of document corruption after a crash."
+      },
+      "lazuli-save": {
+        "title": "Incremental .lazuli saving",
+        "description": "Write only changed tiles and data to save faster. Initial desktop support is available, and support across all platforms is in progress."
+      },
+      "raster-io": {
+        "title": "Common raster image import and export",
+        "description": "Import and export common raster formats such as PNG, JPG, and AVIF."
+      },
+      "dock-workspace": {
+        "title": "Dockable tabbed workspace",
+        "description": "Dock and group panels freely, and switch between tabs."
+      },
+      "shortcuts": {
+        "title": "Custom keyboard shortcuts",
+        "description": "Configure shortcuts for global actions and tools."
+      },
+      "asset-packs": {
+        "title": "Asset packs",
+        "description": "Manage built-in and external packs of brushes, filters, effects, and textures in one place."
+      },
+      "undo-redo": {
+        "title": "Undo and redo",
+        "description": "Support multiple undo and redo steps for canvas and document operations."
+      },
+      "fluent": {
+        "title": "Fluent localization",
+        "description": "Use Fluent to support multiple languages."
+      },
+      "cross-platform": {
+        "title": "Cross-platform build support",
+        "description": "Use one codebase for Windows, Linux, macOS, and Android."
+      },
+      "layer-lock": {
+        "title": "Layer locking",
+        "description": "Enforce layer locks across layer stack operations and editing tools."
+      },
+      "channel-lock": {
+        "title": "Channel locking",
+        "description": "Enforce color and alpha channel locks across pixel editing tools."
+      },
+      "psd-io": {
+        "title": "PSD project import and export",
+        "description": "Import and export Adobe Photoshop .psd project files."
+      }
+    }
+  },
+  "near-term": {
+    "title": "Near-term plans",
+    "description": "Make painting smoother, more complete, and easier to use",
+    "tasks": {
+      "clipping-masks": {
+        "title": "Photoshop-style clipping masks",
+        "description": "Use clipping layers to restrict upper-layer content to the visible area of the lower layer."
+      },
+      "alpha-inheritance": {
+        "title": "Krita-style alpha inheritance",
+        "description": "Let layers in a group inherit alpha from the layers beneath them."
+      },
+      "transparency-masks": {
+        "title": "Non-destructive transparency masks",
+        "description": "Control layer visibility with a separate transparency mask child layer."
+      },
+      "filter-layers": {
+        "title": "Non-destructive filter layers and masks",
+        "description": "Use adjustable filter layers and local filter masks that can be toggled at any time."
+      },
+      "lazuli-compatibility": {
+        "title": "Custom .lazuli data and compatibility",
+        "description": "Serialize custom layer data and handle forward and backward document format compatibility."
+      },
+      "compositing-cache": {
+        "title": "Incremental compositing cache",
+        "description": "Build and reuse blend results as needed to reduce redraw work."
+      },
+      "brush-preview-cache": {
+        "title": "On-disk brush preview cache",
+        "description": "Cache brush stroke previews by asset ID to load panels faster."
+      },
+      "canvas-navigator": {
+        "title": "Canvas Navigator dock",
+        "description": "Show a canvas thumbnail and provide quick panning and zooming."
+      },
+      "history-dock": {
+        "title": "History dock",
+        "description": "Show the undo stack and jump directly to a history state."
+      },
+      "palette-dock": {
+        "title": "Palette dock",
+        "description": "Manage swatches, save color schemes, and pick colors quickly."
+      },
+      "brush-history": {
+        "title": "Brush History dock",
+        "description": "Keep recently used brush presets available for quick switching."
+      },
+      "quick-actions": {
+        "title": "Quick Actions panel",
+        "description": "Customize a panel of actions and key combinations for faster or keyboard-free work."
+      }
+    }
+  },
+  "mid-term": {
+    "title": "Mid-term plans",
+    "description": "Build professional illustration tools and flexible programmable workflows",
+    "tasks": {
+      "node-layer-system": {
+        "title": "Fully node-based layer system",
+        "description": "Use a dedicated Shader Graph editor to customize layer blending and execution order beyond the traditional layer stack."
+      },
+      "brush-performance": {
+        "title": "Brush engine performance improvements",
+        "description": "Improve brush rendering, scheduling, and large strokes to reduce latency on high-resolution canvases."
+      },
+      "vector-layers": {
+        "title": "Vector layers",
+        "description": "Support resolution-independent paths, geometric shapes, and non-destructive vector editing."
+      },
+      "text-layout": {
+        "title": "Text shapes and layout",
+        "description": "Edit text as vector shapes inside vector layers rather than as separate layers."
+      },
+      "drawing-guides": {
+        "title": "Drawing guides",
+        "description": "Provide symmetry rulers and one-, two-, and three-point perspective guides."
+      },
+      "reference-images": {
+        "title": "Canvas reference images",
+        "description": "Place and scale reference images freely on the canvas and sample colors directly from them, as in Krita."
+      },
+      "fp16": {
+        "title": "End-to-end 16-bit floating-point color",
+        "description": "Use FP16 across the pipeline for high dynamic range pixel storage, blending, and filter calculations."
+      },
+      "hdr-output": {
+        "title": "HDR display output",
+        "description": "Show high dynamic range canvas content accurately on HDR displays."
+      },
+      "soft-proofing": {
+        "title": "Soft proofing",
+        "description": "Preview target color spaces. CMYK is available for soft proofing only, not direct editing."
+      },
+      "histogram": {
+        "title": "Histogram dock",
+        "description": "Show real-time color and lightness distributions to help judge color and exposure."
+      },
+      "time-lapse": {
+        "title": "Time-lapse dock and video export",
+        "description": "Record painting with low overhead, then preview and export the time-lapse in a built-in panel."
+      },
+      "kra-io": {
+        "title": "KRA project import and export",
+        "description": "Import and export Krita .kra project files."
+      },
+      "procreate-brushes": {
+        "title": "Procreate brush compatibility",
+        "description": "Parse and import Procreate .brushset packs."
+      },
+      "clip-studio-brushes": {
+        "title": "Clip Studio Paint brush compatibility",
+        "description": "Parse and import Clip Studio Paint .sut brushes."
+      },
+      "krita-brushes": {
+        "title": "Krita brush compatibility",
+        "description": "Parse and import Krita .kpp presets."
+      }
+    }
+  },
+  "long-term": {
+    "title": "Long-term vision",
+    "description": "Explore 2D and 3D workflows, procedural materials, and an open ecosystem",
+    "tasks": {
+      "pixel-art": {
+        "title": "Pixel art tools",
+        "description": "Provide dedicated brushes and canvas tools for pixel art, including Pixel Perfect strokes."
+      },
+      "blender-materials": {
+        "title": "Blender material painting integration",
+        "description": "Paint Blender materials directly in Lapiz and sync them with Blender."
+      },
+      "blender-viewport": {
+        "title": "Blender 3D viewport reference",
+        "description": "Project the live Blender 3D viewport onto the canvas as a painting reference."
+      },
+      "procedural-nodes": {
+        "title": "Built-in filter assets and procedural nodes",
+        "description": "Provide built-in filter presets and nodes for procedural texture generation."
+      },
+      "pbr-output": {
+        "title": "Seamless tiling and multichannel PBR output",
+        "description": "Support seamless tiling in both directions and export multichannel PBR textures for selected procedural material workflows."
+      },
+      "rust-plugins": {
+        "title": "Native Rust plugin API",
+        "description": "Provide a stable interface for writing high-performance plugins directly in Rust."
+      },
+      "mobile": {
+        "title": "Mobile and tablet support",
+        "description": "Improve touch gestures and provide a lightweight workspace for tablets and touchscreens."
+      },
+      "frame-animation": {
+        "title": "Frame-by-frame animation and Timeline dock",
+        "description": "Provide a timeline and onion skinning for basic frame-by-frame animation."
+      }
+    }
+  }
+}

@@ -1,5 +1,55 @@
 import { expect, test } from '@playwright/test'
-import roadmap from '../src/roadmap.json' with { type: 'json' }
+import progress from '../public/roadmap/progress.json' with { type: 'json' }
+import chineseContent from '../public/roadmap/zh-CN.json' with { type: 'json' }
+import englishContent from '../public/roadmap/en.json' with { type: 'json' }
+
+type Proposal = { title: string; description: string }
+type Contents = Record<string, Proposal & { tasks: Record<string, Proposal> }>
+const chinese: Contents = chineseContent
+const english: Contents = englishContent
+const roadmap = progress.map(stage => {
+  const content = chinese[stage.id]
+  return { title: content.title, tasks: stage.tasks.map(task => ({ ...task, ...content.tasks[task.id] })) }
+})
+
+test.describe('English locale', () => {
+  test.use({ locale: 'en-GB', viewport: { width: 320, height: 740 } })
+
+  test('uses browser language and switches proposals without resetting the filter', async ({ page }) => {
+    const progressResponse = page.waitForResponse('**/roadmap/progress.json')
+    const englishResponse = page.waitForResponse('**/roadmap/en.json')
+    await page.goto('/lapiz/roadmap')
+    expect((await progressResponse).ok()).toBe(true)
+    expect((await englishResponse).ok()).toBe(true)
+    await expect(page.getByRole('main')).toHaveAttribute('lang', 'en')
+    await expect(page.getByRole('heading', { name: 'Lapiz Development roadmap' })).toBeVisible()
+    await page.evaluate(() => document.fonts.ready)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320)
+
+    for (const stage of progress) {
+      const content = english[stage.id]
+      const section = page.getByRole('region', { name: content.title })
+      await expect(section.getByRole('listitem')).toHaveCount(stage.tasks.length)
+      await expect(section.getByText(content.description, { exact: true })).toBeVisible()
+      for (const task of stage.tasks) {
+        const proposal = content.tasks[task.id]
+        const item = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: proposal.title, exact: true }) })
+        await expect(item).toHaveAttribute('data-status', task.status)
+        await expect(item.getByText(proposal.description, { exact: true })).toBeVisible()
+      }
+    }
+
+    await page.getByRole('button', { name: /In progress/ }).click()
+    const chineseResponse = page.waitForResponse('**/roadmap/zh-CN.json')
+    await page.getByRole('combobox', { name: 'Change language' }).selectOption('zh-CN')
+    expect((await chineseResponse).ok()).toBe(true)
+    await expect(page.getByRole('main')).toHaveAttribute('lang', 'zh-CN')
+    await expect(page.getByRole('button', { name: /进行中/ })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('heading', { name: '变换工具集' })).toBeVisible()
+  })
+})
+
+test.use({ locale: 'zh-CN' })
 
 test('roadmap opens directly and filters tasks without removing milestones', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
@@ -9,7 +59,7 @@ test('roadmap opens directly and filters tasks without removing milestones', asy
   await expect(page.getByRole('heading', { name: 'Lapiz 开发路线图' })).toBeVisible()
 
   for (const stage of roadmap) {
-    const section = page.getByRole('region', { name: stage.version })
+    const section = page.getByRole('region', { name: stage.title })
     await expect(section.getByRole('listitem')).toHaveCount(stage.tasks.length)
     await expect(section.getByRole('heading', { name: stage.tasks[0].title, exact: true })).toBeVisible()
     await expect(section.getByText(stage.tasks[0].description, { exact: true })).toBeVisible()
@@ -20,7 +70,7 @@ test('roadmap opens directly and filters tasks without removing milestones', asy
     await button.click()
     await expect(button).toHaveAttribute('aria-pressed', 'true')
     for (const stage of roadmap) {
-      const section = page.getByRole('region', { name: stage.version })
+      const section = page.getByRole('region', { name: stage.title })
       const tasks = stage.tasks.filter(task => task.status === status)
       await expect(section.getByRole('listitem')).toHaveCount(tasks.length)
       await expect(section.getByText(label, { exact: true })).toHaveCount(tasks.length)

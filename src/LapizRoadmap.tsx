@@ -2,19 +2,68 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useReducedMotion } from 'motion/react'
 import { Contours } from './Fields'
 import { nearbyCharacters } from './scan'
-import roadmap from './roadmap.json'
 import './lapiz-roadmap.css'
 
-const statuses = [
-  { id: 'completed', label: '已完成' },
-  { id: 'in_progress', label: '进行中' },
-  { id: 'todo', label: '待办' },
-] as const
-const tasks = roadmap.flatMap(stage => stage.tasks)
-const filters = [
-  { id: 'all', label: '全部', count: tasks.length },
-  ...statuses.map(status => ({ ...status, count: tasks.filter(task => task.status === status.id).length })),
-] as const
+const statuses = ['completed', 'in_progress', 'todo'] as const
+const filterIds = ['all', ...statuses] as const
+const languages = ['zh-CN', 'en'] as const
+const [chinese, english] = languages
+
+type Language = (typeof languages)[number]
+type Status = (typeof statuses)[number]
+type TaskProgress = { id: string; status: Status }
+type StageProgress = { id: string; codename?: string; tasks: TaskProgress[] }
+type Proposal = { title: string; description: string }
+type StageContent = Proposal & { tasks: Record<string, Proposal> }
+type Stage = Omit<StageProgress, 'tasks'> & Proposal & { tasks: (TaskProgress & Proposal)[] }
+
+const text = {
+  [chinese]: {
+    name: '简体中文', language: '切换语言', back: '返回群岛', subtitle: '开发路线图', filter: '按任务状态筛选',
+    all: '全部', completed: '已完成', in_progress: '进行中', todo: '待办',
+    result: (count: number, total: number) => `显示 ${count} / ${total} 项`,
+    stage: (index: string) => `阶段 ${index}`, items: (count: number) => `${count} 项`,
+    empty: '这个阶段没有符合条件的任务', loading: '正在加载路线图…', error: '无法加载路线图，请刷新重试。',
+  },
+  [english]: {
+    name: 'English', language: 'Change language', back: 'Back to the archipelago', subtitle: 'Development roadmap', filter: 'Filter by task status',
+    all: 'All', completed: 'Completed', in_progress: 'In progress', todo: 'To do',
+    result: (count: number, total: number) => `Showing ${count} / ${total} ${total === 1 ? 'task' : 'tasks'}`,
+    stage: (index: string) => `Stage ${index}`, items: (count: number) => `${count} ${count === 1 ? 'task' : 'tasks'}`,
+    empty: 'No matching tasks in this stage', loading: 'Loading roadmap…', error: 'Could not load the roadmap. Refresh to try again.',
+  },
+}
+
+function preferredLanguage(): Language {
+  for (const preference of navigator.languages) {
+    const primary = preference.toLowerCase().split('-')[0]
+    if (primary === 'zh') return chinese
+    if (primary === 'en') return english
+  }
+
+  return chinese
+}
+
+async function readRoadmapFile<T>(name: string, signal: AbortSignal): Promise<T> {
+  const response = await fetch(`/roadmap/${name}.json`, { signal })
+  if (!response.ok) throw new Error(`Could not load roadmap file: ${name}`)
+  return response.json()
+}
+
+async function loadRoadmap(language: Language, signal: AbortSignal): Promise<Stage[]> {
+  const [progress, content] = await Promise.all([
+    readRoadmapFile<StageProgress[]>('progress', signal),
+    readRoadmapFile<Record<string, StageContent>>(language, signal),
+  ])
+
+  return progress.map(stage => {
+    const { title, description, tasks } = content[stage.id]
+    return { ...stage, title, description, tasks: stage.tasks.map(task => {
+      const { title, description } = tasks[task.id]
+      return { ...task, title, description }
+    }) }
+  })
+}
 
 const CLUSTER_RADIUS = 56
 const CLUSTER_COUNT = 9
@@ -91,11 +140,28 @@ function RoadmapText({ children }: { children: string }) {
 }
 
 export function LapizRoadmap() {
-  const [filter, setFilter] = useState<(typeof filters)[number]['id']>('all')
+  const [language, setLanguage] = useState(preferredLanguage)
+  const [loaded, setLoaded] = useState<{ language: Language; stages: Stage[] | null }>()
+  const [filter, setFilter] = useState<(typeof filterIds)[number]>('all')
   const [frame, setFrame] = useState(0)
   const [chooseCharacters, setChooseCharacters] = useState<((character: string) => string[]) | null>(null)
   const reduced = useReducedMotion()
   const revealFrame = reduced ? REVEAL_FRAMES : frame
+  const labels = text[language]
+  const roadmap = loaded?.language === language ? loaded.stages : undefined
+  const tasks = roadmap?.flatMap(stage => stage.tasks) ?? []
+  const counts = { all: tasks.length, completed: 0, in_progress: 0, todo: 0 }
+  for (const task of tasks) counts[task.status]++
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void loadRoadmap(language, controller.signal).then(stages => {
+      if (!controller.signal.aborted) setLoaded({ language, stages })
+    }, () => {
+      if (!controller.signal.aborted) setLoaded({ language, stages: null })
+    })
+    return () => controller.abort()
+  }, [language])
 
   useEffect(() => {
     if (reduced) return
@@ -132,23 +198,32 @@ export function LapizRoadmap() {
     }
   }, [reduced])
 
-  return <RevealFrame.Provider value={revealFrame}><RevealCharacters.Provider value={chooseCharacters}><main className="lapiz-roadmap scene" data-revealing={revealFrame < REVEAL_FRAMES}>
+  return <RevealFrame.Provider value={revealFrame}><RevealCharacters.Provider value={chooseCharacters}><main className="lapiz-roadmap scene" lang={language} data-revealing={revealFrame < REVEAL_FRAMES}>
     <LapizBackdrop />
     <header className="lapiz-header">
       <span><i aria-hidden="true" /><RoadmapText>LAPIZ / ROADMAP</RoadmapText></span>
-      <a href="/"><span aria-hidden="true">← </span><RoadmapText>返回群岛</RoadmapText></a>
+      <div className="lapiz-header-actions">
+        <a href="/"><span aria-hidden="true">← </span><RoadmapText>{labels.back}</RoadmapText></a>
+        <select className="lapiz-language" aria-label={labels.language} title={labels.language} value={language} onChange={event => {
+          const selected = languages.find(item => item === event.target.value)
+          if (selected) setLanguage(selected)
+        }}>
+          {languages.map(item => <option key={item} value={item} lang={item}>{text[item].name}</option>)}
+        </select>
+      </div>
     </header>
 
     <div className="lapiz-hero">
-      <h1><span lang="en"><RoadmapText>Lapiz</RoadmapText></span> <span className="lapiz-subtitle"><RoadmapText>开发路线图</RoadmapText></span></h1>
+      <h1><span lang="en"><RoadmapText>Lapiz</RoadmapText></span> <span className="lapiz-subtitle"><RoadmapText>{labels.subtitle}</RoadmapText></span></h1>
     </div>
 
+    {!roadmap ? <p className="lapiz-empty" role={roadmap === null ? 'alert' : 'status'}>{roadmap === null ? labels.error : labels.loading}</p> : <>
     <div className="lapiz-toolbar">
-      <div className="lapiz-filters" role="group" aria-label="按任务状态筛选">
-        {filters.map(({ id, label, count }) => {
+      <div className="lapiz-filters" role="group" aria-label={labels.filter}>
+        {filterIds.map(id => {
           const content = <>
             {id !== 'all' && <span className="lapiz-status" data-status={id} aria-hidden="true" />}
-            <RoadmapText>{label}</RoadmapText><span className="lapiz-filter-count"><RoadmapText>{String(count)}</RoadmapText></span>
+            <RoadmapText>{labels[id]}</RoadmapText><span className="lapiz-filter-count"><RoadmapText>{String(counts[id])}</RoadmapText></span>
           </>
 
           return <button key={id} className="frame-button" type="button" aria-pressed={filter === id} onClick={() => setFilter(id)}>
@@ -157,7 +232,7 @@ export function LapizRoadmap() {
           </button>
         })}
       </div>
-      <p className="lapiz-result" role="status"><RoadmapText>{`显示 ${filters.find(item => item.id === filter)?.count} / ${tasks.length} 项`}</RoadmapText></p>
+      <p className="lapiz-result" role="status"><RoadmapText>{labels.result(counts[filter], counts.all)}</RoadmapText></p>
     </div>
 
     <div className="lapiz-stages">
@@ -165,27 +240,29 @@ export function LapizRoadmap() {
         const id = `lapiz-stage-${index + 1}`
         const visible = filter === 'all' ? stage.tasks : stage.tasks.filter(task => task.status === filter)
 
-        return <section key={stage.version} className="lapiz-stage" aria-labelledby={id}>
+        return <section key={stage.id} className="lapiz-stage" aria-labelledby={id}>
           <header className="lapiz-stage-header">
-            <p className="lapiz-stage-index"><span><RoadmapText>{`阶段 ${String(index + 1).padStart(2, '0')}`}</RoadmapText></span><RoadmapText>{`${visible.length} 项`}</RoadmapText></p>
-            <h2 id={id}><RoadmapText>{stage.version}</RoadmapText></h2>
+            <p className="lapiz-stage-index"><span><RoadmapText>{labels.stage(String(index + 1).padStart(2, '0'))}</RoadmapText></span><RoadmapText>{labels.items(visible.length)}</RoadmapText></p>
+            <h2 id={id}><RoadmapText>{stage.title}</RoadmapText></h2>
             {stage.codename && <p className="lapiz-codename" lang="en"><RoadmapText>{stage.codename}</RoadmapText></p>}
             <p className="lapiz-stage-description"><RoadmapText>{stage.description}</RoadmapText></p>
           </header>
           {visible.length ? <ul className="lapiz-tasks" role="list">
-            {visible.map(task => <li key={task.title} className="lapiz-task" data-status={task.status}>
+            {visible.map(task => <li key={task.id} className="lapiz-task" data-status={task.status}>
               <span className="lapiz-status" data-status={task.status} aria-hidden="true" />
               {[0, 1, 2, 3].map(corner => <i key={corner} className={`tag-corner tag-corner-${corner}`} aria-hidden="true" />)}
               <div>
                 <h3><RoadmapText>{task.title}</RoadmapText></h3>
-                <span className="sr-only">{statuses.find(status => status.id === task.status)?.label}</span>
+                <span className="sr-only">{labels[task.status]}</span>
                 <p><RoadmapText>{task.description}</RoadmapText></p>
               </div>
             </li>)}
-          </ul> : <p className="lapiz-empty"><RoadmapText>这个阶段没有符合条件的任务</RoadmapText></p>}
+          </ul> : <p className="lapiz-empty"><RoadmapText>{labels.empty}</RoadmapText></p>}
         </section>
       })}
     </div>
+
+    </>}
 
     <footer className="lapiz-footer"><RoadmapText>LAPIZ / ROADMAP</RoadmapText></footer>
   </main></RevealCharacters.Provider></RevealFrame.Provider>

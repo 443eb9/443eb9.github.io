@@ -65,6 +65,19 @@
 .lapiz-header i { width: 10px; height: 10px; background: currentColor; }
 .lapiz-header a { padding: 6px 0; }
 .lapiz-header a:hover { text-decoration: underline; text-underline-offset: .25em; }
+.lapiz-header-actions { display: flex; align-items: center; gap: 12px; margin-inline-start: auto; }
+.lapiz-language {
+  appearance: none;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--blue);
+  color: transparent;
+  background: #fff url('/images/icons/globe.svg') center / 24px no-repeat;
+  cursor: pointer;
+}
+.lapiz-language:hover { background-color: var(--paper); }
+.lapiz-language option { color: var(--blue); }
 
 .lapiz-hero { padding-block: clamp(28px, 5vw, 76px); }
 .lapiz-hero h1 {
@@ -88,7 +101,7 @@
   font-size: clamp(20px, 3.2vw, 46px);
   line-height: 1.2;
   letter-spacing: .05em;
-  white-space: nowrap;
+  text-align: end;
 }
 
 .lapiz-toolbar {
@@ -149,6 +162,7 @@
   .lapiz-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
+  .lapiz-roadmap:lang(en) .lapiz-hero h1 { flex-wrap: wrap; }
   .lapiz-stages { grid-template-columns: minmax(0, 1fr); }
   .lapiz-stage-header { min-height: 0; }
   .lapiz-filters button { min-height: 42px; }
