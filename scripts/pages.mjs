@@ -1,5 +1,6 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { islandRouteId } from '../src/island-content.ts'
+import { pageNames, pageTitle } from '../src/page-titles.ts'
 
 let islands
 try {
@@ -9,15 +10,17 @@ try {
 }
 
 const html = await readFile('dist/index.html', 'utf8')
-for (const [path, title] of [['log', '日志'], ['metadata', '元数据'], ['neighbourhood', '邻域'], ['lapiz/roadmap', 'Lapiz 路线图']]) {
-  await mkdir(`dist/${path}`, { recursive: true })
-  await writeFile(`dist/${path}/index.html`, html.replace('<title>Crepuscular Archipelago · 443eb9#C</title>', `<title>${title} · Crepuscular Archipelago</title>`))
+const fixedPageHtml = path => html.replace(/<title>[^<]*<\/title>/, `<title>${pageTitle(path)}</title>`)
+for (const path of pageNames.keys()) {
+  const directory = `dist${path}`
+  await mkdir(directory, { recursive: true })
+  await writeFile(`${directory}/index.html`, fixedPageHtml(path))
 }
 for (const island of islands) {
   const directory = `dist/island/${islandRouteId(island.id)}`
   await mkdir(directory, { recursive: true })
   await writeFile(`${directory}/index.html`, html)
 }
-await copyFile('dist/index.html', 'dist/404.html')
+await writeFile('dist/404.html', fixedPageHtml('/404'))
 await writeFile('dist/.nojekyll', '')
 await writeFile('dist/CNAME', '443eb9.dev\n')

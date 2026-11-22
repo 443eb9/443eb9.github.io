@@ -7,6 +7,7 @@ import { Neighbourhood } from './Neighbourhood'
 import { LapizRoadmap } from './LapizRoadmap'
 import islands from './generated/islands.json'
 import { islandId, islandRouteId } from './island-content'
+import { pageTitle } from './page-titles'
 
 const WIPE = { duration: 0.65, width: 8, widthScale: 10, steps: 128 } as const
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
@@ -80,8 +81,7 @@ export function App() {
   useEffect(() => {
     const page = entering ?? current
     const island = islands.find(item => islandRouteId(item.id) === islandId(page.path))
-    const titles: Record<string, string> = { '/': 'Crepuscular Archipelago · 443eb9#C', '/log': '日志 · Crepuscular Archipelago', '/metadata': '元数据 · Crepuscular Archipelago', '/neighbourhood': '邻域 · Crepuscular Archipelago', '/lapiz/roadmap': 'Lapiz 路线图 · Crepuscular Archipelago' }
-    document.title = island ? `${island.title} · Crepuscular Archipelago` : titles[page.path] ?? '404 · Crepuscular Archipelago'
+    document.title = pageTitle(page.path, island?.title)
     if (!entering) root.current?.querySelector<HTMLElement>('[data-page-view]')?.focus({ preventScroll: true })
   }, [current, entering])
 

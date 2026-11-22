@@ -47,6 +47,7 @@ test('navigation reveals the new page left of the blue bar and supports history 
   await finish()
   await expect(page.locator('.page-wipe')).toHaveCount(0)
   await expect(page.locator('.home')).toHaveCount(0)
+  await expect(page).toHaveTitle('Log · Crepuscular Archipelago')
   await expect(page.getByRole('button', { name: '目录', exact: true })).toBeVisible()
   expect(await page.locator('body').getAttribute('data-navigation-probe')).toBe('same-document')
 
