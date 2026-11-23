@@ -177,9 +177,9 @@
         "title": "笔刷历史 Dock",
         "description": "记录最近使用过的笔刷预设，方便在创作中快速切换。"
       },
-      "quick-actions": {
-        "title": "快捷操作面板",
-        "description": "提供可自定义的快捷操作与组合键面板（Quick Actions），提升无键盘或高效创作体验。"
+      "backup-mechanism": {
+        "title": "自动备份与回档机制（类版本控制）",
+        "description": "类版本控制的自动备份机制，并在用户需要时提供回档功能，降低误操作与崩溃损坏风险。"
       }
     }
   },
@@ -246,6 +246,10 @@
       "krita-brushes": {
         "title": "Krita 笔刷兼容",
         "description": "支持解析与导入 Krita .kpp 笔刷预设。"
+      },
+      "quick-actions": {
+        "title": "快捷操作面板",
+        "description": "提供可自定义的快捷操作与组合键面板（Quick Actions），提升无键盘或高效创作体验。"
       }
     }
   },

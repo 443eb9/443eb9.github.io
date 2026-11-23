@@ -177,7 +177,7 @@
         "status": "todo"
       },
       {
-        "id": "quick-actions",
+        "id": "backup-mechanism",
         "status": "todo"
       }
     ]
@@ -243,6 +243,10 @@
       },
       {
         "id": "krita-brushes",
+        "status": "todo"
+      },
+      {
+        "id": "quick-actions",
         "status": "todo"
       }
     ]

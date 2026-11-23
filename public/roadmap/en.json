@@ -177,9 +177,9 @@
         "title": "Brush History dock",
         "description": "Keep recently used brush presets available for quick switching."
       },
-      "quick-actions": {
-        "title": "Quick Actions panel",
-        "description": "Customize a panel of actions and key combinations for faster or keyboard-free work."
+      "backup-mechanism": {
+        "title": "Automatic backup and rollback mechanism (version control-like)",
+        "description": "Version control-like automatic backup mechanism, with rollback functionality available when needed to reduce the risk of accidental operations and crash damage."
       }
     }
   },
@@ -246,6 +246,10 @@
       "krita-brushes": {
         "title": "Krita brush compatibility",
         "description": "Parse and import Krita .kpp presets."
+      },
+      "quick-actions": {
+        "title": "Quick Actions panel",
+        "description": "Customize a panel of actions and key combinations for faster or keyboard-free work."
       }
     }
   },
