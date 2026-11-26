@@ -81,11 +81,11 @@
       },
       {
         "id": "lazuli-format",
-        "status": "completed"
+        "status": "in_progress"
       },
       {
         "id": "lazuli-save",
-        "status": "in_progress"
+        "status": "completed"
       },
       {
         "id": "raster-io",
