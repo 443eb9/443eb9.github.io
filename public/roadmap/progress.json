@@ -81,7 +81,7 @@
       },
       {
         "id": "lazuli-format",
-        "status": "in_progress"
+        "status": "completed"
       },
       {
         "id": "lazuli-save",
@@ -97,7 +97,7 @@
       },
       {
         "id": "shortcuts",
-        "status": "todo"
+        "status": "completed"
       },
       {
         "id": "asset-packs",
