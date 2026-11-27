@@ -11,11 +11,12 @@ const [chinese, english] = languages
 
 type Language = (typeof languages)[number]
 type Status = (typeof statuses)[number]
-type TaskProgress = { id: string; status: Status }
-type StageProgress = { id: string; codename?: string; tasks: TaskProgress[] }
 type Proposal = { title: string; description: string }
-type StageContent = Proposal & { tasks: Record<string, Proposal> }
-type Stage = Omit<StageProgress, 'tasks'> & Proposal & { tasks: (TaskProgress & Proposal)[] }
+type RoadmapItem = Record<string, Status>
+type RoadmapStage = { stage: string; codename?: string; i18n?: Partial<Record<Language, Proposal>>; items: RoadmapItem[] }
+type RoadmapData = { progress: RoadmapStage[]; tasks: Partial<Record<Language, Record<string, Proposal>>> }
+type Task = Proposal & { id: string; status: Status }
+type Stage = Proposal & { id: string; codename?: string; tasks: Task[] }
 
 const text = {
   [chinese]: {
@@ -44,24 +45,37 @@ function preferredLanguage(): Language {
   return chinese
 }
 
-async function readRoadmapFile<T>(name: string, signal: AbortSignal): Promise<T> {
-  const response = await fetch(`/roadmap/${name}.json`, { signal })
-  if (!response.ok) throw new Error(`Could not load roadmap file: ${name}`)
+async function loadRoadmap(signal: AbortSignal): Promise<RoadmapData> {
+  const response = await fetch('/roadmap.json', { signal })
+  if (!response.ok) throw new Error('Could not load roadmap file')
   return response.json()
 }
 
-async function loadRoadmap(language: Language, signal: AbortSignal): Promise<Stage[]> {
-  const [progress, content] = await Promise.all([
-    readRoadmapFile<StageProgress[]>('progress', signal),
-    readRoadmapFile<Record<string, StageContent>>(language, signal),
-  ])
+function resolveRoadmap(data: RoadmapData, language: Language): Stage[] {
+  const preferredTasks = data.tasks[language]
+  const fallbackTasks = Object.values(data.tasks)[0]
 
-  return progress.map(stage => {
-    const { title, description, tasks } = content[stage.id]
-    return { ...stage, title, description, tasks: stage.tasks.map(task => {
-      const { title, description } = tasks[task.id]
-      return { ...task, title, description }
-    }) }
+  return data.progress.map(stage => {
+    const stageCopy = stage.i18n?.[language]
+      ?? (stage.i18n ? Object.values(stage.i18n)[0] : undefined)
+      ?? { title: stage.stage, description: '' }
+
+    return {
+      id: stage.stage,
+      codename: stage.codename,
+      title: stageCopy.title,
+      description: stageCopy.description,
+      tasks: stage.items.map(item => {
+        const [id, status] = Object.entries(item)[0]
+        const taskCopy = preferredTasks?.[id] ?? fallbackTasks?.[id] ?? { title: id, description: '' }
+        return {
+          id,
+          status,
+          title: taskCopy.title,
+          description: taskCopy.description,
+        }
+      }),
+    }
   })
 }
 
@@ -141,27 +155,27 @@ function RoadmapText({ children }: { children: string }) {
 
 export function LapizRoadmap() {
   const [language, setLanguage] = useState(preferredLanguage)
-  const [loaded, setLoaded] = useState<{ language: Language; stages: Stage[] | null }>()
+  const [data, setData] = useState<RoadmapData | null>()
   const [filter, setFilter] = useState<(typeof filterIds)[number]>('all')
   const [frame, setFrame] = useState(0)
   const [chooseCharacters, setChooseCharacters] = useState<((character: string) => string[]) | null>(null)
   const reduced = useReducedMotion()
   const revealFrame = reduced ? REVEAL_FRAMES : frame
   const labels = text[language]
-  const roadmap = loaded?.language === language ? loaded.stages : undefined
+  const roadmap = useMemo(() => data ? resolveRoadmap(data, language) : data, [data, language])
   const tasks = roadmap?.flatMap(stage => stage.tasks) ?? []
   const counts = { all: tasks.length, completed: 0, in_progress: 0, todo: 0 }
   for (const task of tasks) counts[task.status]++
 
   useEffect(() => {
     const controller = new AbortController()
-    void loadRoadmap(language, controller.signal).then(stages => {
-      if (!controller.signal.aborted) setLoaded({ language, stages })
+    void loadRoadmap(controller.signal).then(loaded => {
+      if (!controller.signal.aborted) setData(loaded)
     }, () => {
-      if (!controller.signal.aborted) setLoaded({ language, stages: null })
+      if (!controller.signal.aborted) setData(null)
     })
     return () => controller.abort()
-  }, [language])
+  }, [])
 
   useEffect(() => {
     if (reduced) return
