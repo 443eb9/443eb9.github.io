@@ -382,7 +382,7 @@
       },
       "compositing-cache": {
         "title": "图像合成器增量混合缓存",
-        "description": "在图层合成阶段按需增量构建与复用混合缓存，降低重绘开销。"
+        "description": "在图层合成阶段按需增量构建与复用混合缓存，并只重绘脏 tile，降低重绘开销。"
       },
       "brush-preview-cache": {
         "title": "笔刷预览磁盘持久化缓存",
@@ -648,7 +648,7 @@
       },
       "compositing-cache": {
         "title": "Incremental compositing cache",
-        "description": "Build and reuse blend results as needed to reduce redraw work."
+        "description": "Build and reuse blend results as needed to reduce redraw work. Also supports incremental dirty tile updates."
       },
       "canvas-navigator": {
         "title": "Canvas Navigator dock",
