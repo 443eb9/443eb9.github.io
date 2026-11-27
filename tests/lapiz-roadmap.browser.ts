@@ -6,7 +6,8 @@ type Proposal = { title: string; description: string }
 function resolveRoadmap(lang: 'zh-CN' | 'en') {
   const translations = roadmapData.tasks[lang] as Record<string, Proposal>
   return roadmapData.progress.map(stage => ({
-    ...stage.i18n[lang],
+    title: stage.stage,
+    codename: 'codename' in stage ? stage.codename : undefined,
     tasks: stage.items.map(item => {
       const [id, status] = Object.entries(item)[0]
       return { id, status, ...translations[id] }
@@ -28,11 +29,12 @@ test.describe('English locale', () => {
     await expect(page.getByRole('heading', { name: 'Lapiz Development roadmap' })).toBeVisible()
     await page.evaluate(() => document.fonts.ready)
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320)
+    await expect(page.getByRole('main')).toHaveAttribute('data-revealing', 'false')
 
     for (const stage of englishRoadmap) {
       const section = page.getByRole('region', { name: stage.title })
       await expect(section.getByRole('listitem')).toHaveCount(stage.tasks.length)
-      await expect(section.getByText(stage.description, { exact: true })).toBeVisible()
+      if (stage.codename) await expect(section.getByText(stage.codename, { exact: true })).toBeVisible()
       for (const task of stage.tasks) {
         const item = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: task.title, exact: true }) })
         await expect(item).toHaveAttribute('data-status', task.status)

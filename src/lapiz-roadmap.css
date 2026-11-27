@@ -125,12 +125,11 @@
 
 .lapiz-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 2vw, 28px); align-items: start; }
 .lapiz-stage { display: grid; gap: 16px; }
-.lapiz-stage-header { min-height: 156px; padding: 14px clamp(13px, 1.4vw, 22px) 16px; background: var(--blue); color: #fff; }
+.lapiz-stage-header { min-height: 124px; padding: 14px clamp(13px, 1.4vw, 22px) 16px; background: var(--blue); color: #fff; }
 .lapiz-stage-index { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; font-size: 13px; letter-spacing: .07em; }
 .lapiz-stage-index > span:first-child::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 7px; background: currentColor; }
 .lapiz-stage h2 { font-size: clamp(23px, 2.2vw, 34px); line-height: 1.16; }
 .lapiz-codename { font-size: 15px; }
-.lapiz-stage-description { margin-top: 8px; font-size: 14px; }
 .lapiz-tasks { display: grid; gap: 16px; }
 .lapiz-task {
   position: relative;

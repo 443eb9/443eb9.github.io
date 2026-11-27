@@ -13,10 +13,10 @@ type Language = (typeof languages)[number]
 type Status = (typeof statuses)[number]
 type Proposal = { title: string; description: string }
 type RoadmapItem = Record<string, Status>
-type RoadmapStage = { stage: string; codename?: string; i18n?: Partial<Record<Language, Proposal>>; items: RoadmapItem[] }
+type RoadmapStage = { stage: string; codename?: string; items: RoadmapItem[] }
 type RoadmapData = { progress: RoadmapStage[]; tasks: Partial<Record<Language, Record<string, Proposal>>> }
 type Task = Proposal & { id: string; status: Status }
-type Stage = Proposal & { id: string; codename?: string; tasks: Task[] }
+type Stage = { id: string; codename?: string; tasks: Task[] }
 
 const text = {
   [chinese]: {
@@ -55,28 +55,20 @@ function resolveRoadmap(data: RoadmapData, language: Language): Stage[] {
   const preferredTasks = data.tasks[language]
   const fallbackTasks = Object.values(data.tasks)[0]
 
-  return data.progress.map(stage => {
-    const stageCopy = stage.i18n?.[language]
-      ?? (stage.i18n ? Object.values(stage.i18n)[0] : undefined)
-      ?? { title: stage.stage, description: '' }
-
-    return {
-      id: stage.stage,
-      codename: stage.codename,
-      title: stageCopy.title,
-      description: stageCopy.description,
-      tasks: stage.items.map(item => {
-        const [id, status] = Object.entries(item)[0]
-        const taskCopy = preferredTasks?.[id] ?? fallbackTasks?.[id] ?? { title: id, description: '' }
-        return {
-          id,
-          status,
-          title: taskCopy.title,
-          description: taskCopy.description,
-        }
-      }),
-    }
-  })
+  return data.progress.map(stage => ({
+    id: stage.stage,
+    codename: stage.codename,
+    tasks: stage.items.map(item => {
+      const [id, status] = Object.entries(item)[0]
+      const taskCopy = preferredTasks?.[id] ?? fallbackTasks?.[id] ?? { title: id, description: '' }
+      return {
+        id,
+        status,
+        title: taskCopy.title,
+        description: taskCopy.description,
+      }
+    }),
+  }))
 }
 
 const CLUSTER_RADIUS = 56
@@ -257,9 +249,8 @@ export function LapizRoadmap() {
         return <section key={stage.id} className="lapiz-stage" aria-labelledby={id}>
           <header className="lapiz-stage-header">
             <p className="lapiz-stage-index"><span><RoadmapText>{labels.stage(String(index + 1).padStart(2, '0'))}</RoadmapText></span><RoadmapText>{labels.items(visible.length)}</RoadmapText></p>
-            <h2 id={id}><RoadmapText>{stage.title}</RoadmapText></h2>
+            <h2 id={id} lang="en"><RoadmapText>{stage.id}</RoadmapText></h2>
             {stage.codename && <p className="lapiz-codename" lang="en"><RoadmapText>{stage.codename}</RoadmapText></p>}
-            <p className="lapiz-stage-description"><RoadmapText>{stage.description}</RoadmapText></p>
           </header>
           {visible.length ? <ul className="lapiz-tasks" role="list">
             {visible.map(task => <li key={task.id} className="lapiz-task" data-status={task.status}>

@@ -3,16 +3,6 @@
     {
       "stage": "v0.1.0",
       "codename": "Abies fabri",
-      "i18n": {
-        "zh-CN": {
-          "title": "v0.1.0",
-          "description": "首个完整可用的基础版本"
-        },
-        "en": {
-          "title": "v0.1.0",
-          "description": "First complete, usable release"
-        }
-      },
       "items": [
         {
           "gpu-canvas": "completed"
@@ -106,43 +96,19 @@
         },
         {
           "psd-io": "todo"
-        }
-      ]
-    },
-    {
-      "stage": "near-term",
-      "i18n": {
-        "zh-CN": {
-          "title": "近期规划",
-          "description": "从「能画」迈向「流畅、完整、顺手」"
-        },
-        "en": {
-          "title": "Near-term plans",
-          "description": "Make painting smoother, more complete, and easier to use"
-        }
-      },
-      "items": [
-        {
-          "clipping-masks": "todo"
-        },
-        {
-          "alpha-inheritance": "todo"
-        },
-        {
-          "transparency-masks": "todo"
-        },
-        {
-          "filter-layers": "todo"
         },
         {
           "lazuli-compatibility": "todo"
         },
         {
-          "compositing-cache": "todo"
-        },
-        {
           "brush-preview-cache": "todo"
-        },
+        }
+      ]
+    },
+    {
+      "stage": "v0.2.0",
+      "codename": "Betula papyrifera",
+      "items": [
         {
           "canvas-navigator": "todo"
         },
@@ -156,30 +122,6 @@
           "brush-history": "todo"
         },
         {
-          "backup-mechanism": "todo"
-        }
-      ]
-    },
-    {
-      "stage": "mid-term",
-      "i18n": {
-        "zh-CN": {
-          "title": "中期规划",
-          "description": "打造专业插画能力与差异化的可编程工作流"
-        },
-        "en": {
-          "title": "Mid-term plans",
-          "description": "Build professional illustration tools and flexible programmable workflows"
-        }
-      },
-      "items": [
-        {
-          "node-layer-system": "todo"
-        },
-        {
-          "brush-performance": "todo"
-        },
-        {
           "vector-layers": "todo"
         },
         {
@@ -189,8 +131,44 @@
           "drawing-guides": "todo"
         },
         {
-          "reference-images": "todo"
+          "histogram": "todo"
         },
+        {
+          "time-lapse": "todo"
+        },
+        {
+          "backup-mechanism": "todo"
+        }
+      ]
+    },
+    {
+      "stage": "v0.3.0",
+      "codename": "Calocedrus decurrens",
+      "items": [
+        {
+          "compositing-cache": "todo"
+        },
+        {
+          "brush-performance": "todo"
+        },
+        {
+          "clipping-masks": "todo"
+        },
+        {
+          "alpha-inheritance": "todo"
+        },
+        {
+          "transparency-masks": "todo"
+        },
+        {
+          "filter-layers": "todo"
+        }
+      ]
+    },
+    {
+      "stage": "v0.4.0",
+      "codename": "Delonix regia",
+      "items": [
         {
           "fp16": "todo"
         },
@@ -199,24 +177,30 @@
         },
         {
           "soft-proofing": "todo"
-        },
-        {
-          "histogram": "todo"
-        },
-        {
-          "time-lapse": "todo"
-        },
+        }
+      ]
+    },
+    {
+      "stage": "v0.5.0",
+      "codename": "Eucalyptus deglupta",
+      "items": [
         {
           "kra-io": "todo"
-        },
-        {
-          "procreate-brushes": "todo"
         },
         {
           "clip-studio-brushes": "todo"
         },
         {
           "krita-brushes": "todo"
+        }
+      ]
+    },
+    {
+      "stage": "v0.6.0",
+      "codename": "Fagus sylvatica",
+      "items": [
+        {
+          "reference-images": "todo"
         },
         {
           "quick-actions": "todo"
@@ -224,18 +208,12 @@
       ]
     },
     {
-      "stage": "long-term",
-      "i18n": {
-        "zh-CN": {
-          "title": "远期愿景",
-          "description": "面向 2D/3D 协同、程序化材质与开放生态的长期探索"
-        },
-        "en": {
-          "title": "Long-term vision",
-          "description": "Explore 2D and 3D workflows, procedural materials, and an open ecosystem"
-        }
-      },
+      "stage": "v?.?.?",
+      "codename": "Undetermined far future",
       "items": [
+        {
+          "node-layer-system": "todo"
+        },
         {
           "pixel-art": "todo"
         },
@@ -256,6 +234,9 @@
         },
         {
           "mobile": "todo"
+        },
+        {
+          "procreate-brushes": "todo"
         },
         {
           "frame-animation": "todo"
