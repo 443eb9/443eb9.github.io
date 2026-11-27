@@ -84,9 +84,6 @@
         },
         {
           "cross-platform": "completed"
-        },
-        {
-          "brush-preview-cache": "todo"
         }
       ]
     },
@@ -652,10 +649,6 @@
       "compositing-cache": {
         "title": "Incremental compositing cache",
         "description": "Build and reuse blend results as needed to reduce redraw work."
-      },
-      "brush-preview-cache": {
-        "title": "On-disk brush preview cache",
-        "description": "Cache brush stroke previews by asset ID to load panels faster."
       },
       "canvas-navigator": {
         "title": "Canvas Navigator dock",
