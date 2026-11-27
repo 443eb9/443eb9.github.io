@@ -38,9 +38,6 @@
           "node-filters": "completed"
         },
         {
-          "layer-effects": "completed"
-        },
-        {
           "input-stabilizer": "completed"
         },
         {
@@ -87,9 +84,6 @@
         },
         {
           "cross-platform": "completed"
-        },
-        {
-          "lazuli-compatibility": "todo"
         },
         {
           "brush-preview-cache": "todo"
@@ -159,6 +153,9 @@
         },
         {
           "filter-layers": "todo"
+        },
+        {
+          "layer-effects": "completed"
         }
       ]
     },
@@ -385,10 +382,6 @@
       "filter-layers": {
         "title": "非破坏性滤镜图层与滤镜蒙版",
         "description": "支持随时可调、可开关的非破坏性滤镜图层与局部滤镜蒙版。"
-      },
-      "lazuli-compatibility": {
-        "title": ".lazuli 文档自定义数据与兼容性",
-        "description": "支持自定义图层数据序列化以及文档格式的前后向兼容处理。"
       },
       "compositing-cache": {
         "title": "图像合成器增量混合缓存",
@@ -655,10 +648,6 @@
       "filter-layers": {
         "title": "Non-destructive filter layers and masks",
         "description": "Use adjustable filter layers and local filter masks that can be toggled at any time."
-      },
-      "lazuli-compatibility": {
-        "title": "Custom .lazuli data and compatibility",
-        "description": "Serialize custom layer data and handle forward and backward document format compatibility."
       },
       "compositing-cache": {
         "title": "Incremental compositing cache",
