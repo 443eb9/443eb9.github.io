@@ -89,15 +89,6 @@
           "cross-platform": "completed"
         },
         {
-          "layer-lock": "todo"
-        },
-        {
-          "channel-lock": "todo"
-        },
-        {
-          "psd-io": "todo"
-        },
-        {
           "lazuli-compatibility": "todo"
         },
         {
@@ -138,6 +129,12 @@
         },
         {
           "backup-mechanism": "todo"
+        },
+        {
+          "layer-lock": "todo"
+        },
+        {
+          "channel-lock": "todo"
         }
       ]
     },
@@ -177,6 +174,9 @@
         },
         {
           "soft-proofing": "todo"
+        },
+        {
+          "psd-io": "todo"
         }
       ]
     },
